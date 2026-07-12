@@ -9,8 +9,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        primary: "#FF6B35",
+        secondary: "#1A1A2E",
+        background: "#F8F9FA",
+        card: "#FFFFFF",
+        "text-primary": "#1A1A2E",
+        "text-secondary": "#6B7280",
+        success: "#10B981",
+        border: "#E5E7EB",
+      },
+      fontFamily: {
+        hindi: ["'Noto Sans Devanagari'", "sans-serif"],
       },
     },
   },

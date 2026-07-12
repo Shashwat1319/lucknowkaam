@@ -1,0 +1,27 @@
+name: Daily Job Auto Poster
+
+on:
+  schedule:
+    - cron: '30 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  post-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 google-generativeai python-dotenv lxml
+
+      - name: Run job poster
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          LUCKNOWKAAM_API_KEY: ${{ secrets.LUCKNOWKAAM_API_KEY }}
+          SITE_URL: https://lucknowkaam.vercel.app
+        run: python scripts/auto_jobs.py
