@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -63,6 +64,12 @@ export default function RootLayout({
     <html lang="hi">
       <head>
         <meta name="google-site-verification" content="QthBs8cJTKZIfozdvVyydJU65ta_cOUBXO-lDYAOZvU" />
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2580771948177805"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
