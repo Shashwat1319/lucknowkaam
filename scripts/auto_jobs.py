@@ -20,19 +20,26 @@ import json
 import time
 import hashlib
 import re
+import ssl
 from datetime import datetime
 from typing import Optional
 
+import requests
+from bs4 import BeautifulSoup
+
+# ─── Gemini SDK — try new google.genai first, fallback to deprecated ───
+
 try:
-    import requests
-    from bs4 import BeautifulSoup
+    from google import genai as gemini_client
+    from google.genai import types
+    _NEW_GEMINI = True
+except ImportError:
     try:
         import google.generativeai as genai
+        _NEW_GEMINI = False
     except ImportError:
-        import google.genai as genai
-except ImportError:
-    print("Missing dependencies. Run: pip install -r requirements.txt")
-    sys.exit(1)
+        gemini_client = None
+        _NEW_GEMINI = None
 
 try:
     from dotenv import load_dotenv
@@ -49,7 +56,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 POSTED_JOBS_FILE = os.path.join(os.path.dirname(__file__), "posted_jobs.json")
 MAX_JOBS_PER_RUN = 15
-REQUEST_DELAY = 2  # seconds between posts
+REQUEST_DELAY = 2
 
 LUCKNOW_AREAS = [
     "Hazratganj", "Gomti Nagar", "Alambagh", "Charbagh",
@@ -80,7 +87,7 @@ JOB_TYPES = {
 }
 
 
-# ─── Logging Helpers ─────────────────────────────────────────────────────────
+# ─── Logging ─────────────────────────────────────────────────────────────────
 
 def log(msg: str):
     print(f"  {msg}")
@@ -154,16 +161,32 @@ def detect_job_type(title: str, description: str = "") -> str:
 
 # ─── Gemini AI Hindi Converter ───────────────────────────────────────────────
 
-def convert_to_hindi_gemini(job_data: dict) -> Optional[dict]:
+def _call_gemini(prompt: str) -> Optional[str]:
     if not GEMINI_API_KEY:
-        log("⚠️  No Gemini API key — using basic Hindi wrapper")
+        return None
+    try:
+        if _NEW_GEMINI:
+            client = gemini_client.Client(api_key=GEMINI_API_KEY)
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+            )
+            return response.text
+        else:
+            genai.configure(api_key=GEMINI_API_KEY)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
+            return response.text
+    except Exception as e:
+        log(f"⚠️  Gemini API error: {e}")
+        return None
+
+
+def convert_to_hindi_gemini(job_data: dict) -> dict:
+    if not GEMINI_API_KEY:
         return _basic_hindi_wrapper(job_data)
 
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel("gemini-1.5-flash")
-
-        prompt = f"""Neeche diye gaye job ki details ko simple Hindi mein likho jo Lucknow ke aam log samajh sakein.
+    prompt = f"""Neeche diye gaye job ki details ko simple Hindi mein likho jo Lucknow ke aam log samajh sakein.
 Bilkul simple bhasha use karo, matlab ki har koi asaani se samajh le.
 
 Job Data:
@@ -182,25 +205,27 @@ Sirf JSON return karo, koi extra text nahi:
   "salary_text_hindi": "kitna paisa milega hindi mein (jaise: ₹10,000 - ₹15,000 prati mahina)"
 }}"""
 
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0].strip()
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0].strip()
-
-        parsed = json.loads(text)
-        parsed.setdefault("title_hindi", job_data.get("title", ""))
-        parsed.setdefault("description_hindi", job_data.get("description", ""))
-        parsed.setdefault("qualification", "कोई विशेष योग्यता नहीं")
-        parsed.setdefault("experience", "कोई अनुभव नहीं चाहिए")
-        parsed.setdefault("salary_text_hindi", job_data.get("salary", ""))
-        return parsed
-
-    except Exception as e:
-        log(f"⚠️  Gemini failed: {e}")
+    text = _call_gemini(prompt)
+    if not text:
         return _basic_hindi_wrapper(job_data)
+
+    text = text.strip()
+    if "```json" in text:
+        text = text.split("```json")[1].split("```")[0].strip()
+    elif "```" in text:
+        text = text.split("```")[1].split("```")[0].strip()
+
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        return _basic_hindi_wrapper(job_data)
+
+    parsed.setdefault("title_hindi", job_data.get("title", ""))
+    parsed.setdefault("description_hindi", job_data.get("description", ""))
+    parsed.setdefault("qualification", "कोई विशेष योग्यता नहीं")
+    parsed.setdefault("experience", "कोई अनुभव नहीं चाहिए")
+    parsed.setdefault("salary_text_hindi", job_data.get("salary", ""))
+    return parsed
 
 
 def _basic_hindi_wrapper(job_data: dict) -> dict:
@@ -208,10 +233,9 @@ def _basic_hindi_wrapper(job_data: dict) -> dict:
     company = job_data.get("company", "Company")
     desc = job_data.get("description", "")
     salary = job_data.get("salary", "")
-
     return {
         "title_hindi": title,
-        "description_hindi": f"{company} ke liye {title} ka kaam hai. {desc}" if desc else f"{company} mein {title} ka kaam hai.",
+        "description_hindi": f"{company} ke liye {title} ka kaam hai." if not desc else f"{company} ke liye {title} ka kaam hai. {desc}",
         "qualification": "कोई विशेष योग्यता नहीं",
         "experience": "कोई अनुभव नहीं चाहिए",
         "salary_text_hindi": salary or "वेतन पर बातचीत होगी",
@@ -244,14 +268,18 @@ class BaseScraper:
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/125.0.0.0 Safari/537.36"
+            "Chrome/128.0.0.0 Safari/537.36"
         ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9,hi;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
     }
 
-    def safe_get(self, url: str, timeout: int = 15) -> Optional[requests.Response]:
+    def safe_get(self, url: str, timeout: int = 15, verify: bool = True) -> Optional[requests.Response]:
         try:
-            resp = requests.get(url, headers=self.headers, timeout=timeout)
+            resp = requests.get(url, headers=self.headers, timeout=timeout, verify=verify)
             resp.raise_for_status()
             return resp
         except Exception as e:
@@ -273,10 +301,10 @@ class InternshalaScraper(BaseScraper):
         jobs = []
         try:
             soup = BeautifulSoup(resp.text, "html.parser")
-            for card in soup.select("div.job-card, div.internship_and_job_card, div.individual_internship, div[data-job-id], a[class*=job]")[:30]:
+            for card in soup.select("div.job-card, div.individual_internship, a[class*=job]")[:30]:
                 try:
-                    el = card.select_one("h3, h4, .heading_2_4, .heading_1_5, .job-title, a[href*=job]")
-                    title = el.get_text(strip=True) if el else ""
+                    title_el = card.select_one(".job-title, .heading_1_5, .heading_2_4, h3, h4")
+                    title = title_el.get_text(strip=True) if title_el else ""
                     if not title or len(title) < 5:
                         continue
                     co = card.select_one(".company_name, .company, .link_display_like_button")
@@ -305,20 +333,19 @@ class TimesJobsScraper(BaseScraper):
 
     def scrape(self) -> list:
         log(f"📡 Scraping {self.source_name}...")
-        sources = [
+        urls = [
             "https://www.timesjobs.com/jobs/lucknow-jobs",
-            "https://www.timesjobs.com/jobs/delivery-jobs-in-lucknow",
         ]
         jobs = []
-        for url in sources:
-            resp = self.safe_get(url)
+        for url in urls:
+            resp = self.safe_get(url, verify=False)
             if not resp:
                 continue
             try:
                 soup = BeautifulSoup(resp.text, "html.parser")
-                for card in soup.select("li.clearfix, .job-bx, article, .card, [class*=job]")[:15]:
+                for card in soup.select("li.clearfix, .job-bx, article")[:20]:
                     try:
-                        title_el = card.select_one("h2 a, h3 a, .job-title a, a[href*=job]")
+                        title_el = card.select_one("h2 a, h3 a, strong a, a[href*=job]")
                         title = title_el.get_text(strip=True) if title_el else ""
                         if not title or len(title) < 5:
                             continue
@@ -349,15 +376,16 @@ class FreshersworldScraper(BaseScraper):
     def scrape(self) -> list:
         log(f"📡 Scraping {self.source_name}...")
         jobs = []
-        for attempt in range(2):
+        for attempt in range(3):
             resp = self.safe_get(
-                f"https://www.freshersworld.com/jobs/jobseeker/lucknow?page={attempt}"
+                f"https://www.freshersworld.com/jobs/jobseeker/lucknow?page={attempt}",
+                timeout=20,
             )
             if not resp:
                 continue
             try:
                 soup = BeautifulSoup(resp.text, "html.parser")
-                for card in soup.select("div.job-card, section.job-item, .card, li")[:20]:
+                for card in soup.select(".job-card, .job-block, .card, li, section")[:15]:
                     try:
                         title_el = card.select_one("h2, h3, h4, .title, .job-title, a")
                         title = title_el.get_text(strip=True) if title_el else ""
@@ -381,44 +409,40 @@ class FreshersworldScraper(BaseScraper):
         return jobs
 
 
-# ─── Source 4: Indeed RSS Feed ──────────────────────────────────────────────
+# ─── Source 4: Foundit (formerly Monster) ────────────────────────────────────
 
-class IndeedScraper(BaseScraper):
-    source_name = "Indeed"
+class FounditScraper(BaseScraper):
+    source_name = "Foundit"
 
     def scrape(self) -> list:
         log(f"📡 Scraping {self.source_name}...")
+        resp = self.safe_get("https://www.foundit.in/jobs/lucknow-jobs")
+        if not resp:
+            return []
+
         jobs = []
-        rss_urls = [
-            "https://www.indeed.com/rss?q=lucknow+jobs&l=",
-            "https://www.indeed.com/rss?q=delivery+boy+lucknow&l=",
-        ]
-        for url in rss_urls:
-            resp = self.safe_get(url)
-            if not resp:
-                continue
-            try:
-                soup = BeautifulSoup(resp.text, "html.parser")
-                for item in soup.select("item")[:10]:
-                    try:
-                        title = item.select_one("title")
-                        desc = item.select_one("description")
-                        t = title.get_text(strip=True) if title else ""
-                        if not t or len(t) < 5:
-                            continue
-                        d = desc.get_text(strip=True) if desc else t
-                        jobs.append({
-                            "title": t,
-                            "company": "Indeed Jobs",
-                            "location": "Lucknow",
-                            "description": d[:300],
-                            "salary": "वेतन पर बातचीत",
-                            "source": "indeed",
-                        })
-                    except Exception:
+        try:
+            soup = BeautifulSoup(resp.text, "html.parser")
+            for card in soup.select(".job-card, .jobRow, article, .card, li")[:20]:
+                try:
+                    title_el = card.select_one("h2, h3, h4, .job-title, .title, a")
+                    title = title_el.get_text(strip=True) if title_el else ""
+                    if not title or len(title) < 5:
                         continue
-            except Exception:
-                continue
+                    co = card.select_one(".company, .org, .employer, .company-name")
+                    loc = card.select_one(".location, .loc, .place")
+                    jobs.append({
+                        "title": title,
+                        "company": co.get_text(strip=True) if co else "Company",
+                        "location": loc.get_text(strip=True) if loc else "Lucknow",
+                        "description": title,
+                        "salary": "वेतन पर बातचीत",
+                        "source": "foundit",
+                    })
+                except Exception:
+                    continue
+        except Exception:
+            pass
         log(f"✓ Found {len(jobs)} jobs")
         return jobs
 
@@ -430,32 +454,37 @@ class GoogleJobsScraper(BaseScraper):
 
     def scrape(self) -> list:
         log(f"📡 Scraping {self.source_name}...")
+        urls = [
+            "https://www.google.com/search?q=lucknow+jobs&ibp=htl;jobs&tbs=qrb:1",
+            "https://www.google.com/search?q=delivery+boy+jobs+lucknow&ibp=htl;jobs",
+        ]
         jobs = []
-        resp = self.safe_get(
-            "https://serpapi.com/rss?q=lucknow+jobs&location=lucknow"
-        )
-        if not resp:
-            return jobs
-        try:
-            soup = BeautifulSoup(resp.text, "html.parser")
-            for item in soup.select("item")[:15]:
-                try:
-                    title = item.select_one("title")
-                    t = title.get_text(strip=True) if title else ""
-                    if not t or len(t) < 5:
+        for url in urls:
+            resp = self.safe_get(url)
+            if not resp:
+                continue
+            try:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                for card in soup.select("[jsname], .job-card, div[role=listbox] div, a[href*=jobs]")[:10]:
+                    try:
+                        title_el = card.select_one("h3, .jobTitle, .title, .job-title")
+                        title = title_el.get_text(strip=True) if title_el else ""
+                        if not title or len(title) < 5:
+                            continue
+                        co = card.select_one(".company, .employer, .company-name")
+                        loc = card.select_one(".location, .loc")
+                        jobs.append({
+                            "title": title,
+                            "company": co.get_text(strip=True) if co else "Company",
+                            "location": loc.get_text(strip=True) if loc else "Lucknow",
+                            "description": title,
+                            "salary": "वेतन पर बातचीत",
+                            "source": "google-jobs",
+                        })
+                    except Exception:
                         continue
-                    jobs.append({
-                        "title": t,
-                        "company": "Google Jobs",
-                        "location": "Lucknow",
-                        "description": t,
-                        "salary": "वेतन पर बातचीत",
-                        "source": "google-jobs",
-                    })
-                except Exception:
-                    continue
-        except Exception:
-            pass
+            except Exception:
+                continue
         log(f"✓ Found {len(jobs)} jobs")
         return jobs
 
@@ -463,20 +492,15 @@ class GoogleJobsScraper(BaseScraper):
 # ─── Gemini Job Generator (Fallback) ─────────────────────────────────────────
 
 def generate_jobs_gemini(count: int = 15) -> list:
-    """Generate realistic Lucknow jobs using Gemini when scraping fails."""
     if not GEMINI_API_KEY:
         return []
 
     log(f"\n🤖 Generating {count} jobs via Gemini AI (fallback)...")
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel("gemini-1.5-flash")
 
-        areas_str = ", ".join(LUCKNOW_AREAS)
-        cats_str = ", ".join(f"{c}" for c in CATEGORY_KEYWORDS.keys())
+    areas_str = ", ".join(LUCKNOW_AREAS)
+    cats_str = ", ".join(CATEGORY_KEYWORDS.keys())
 
-        prompt = f"""Generate {count} realistic job listings for Lucknow, India in JSON format.
+    prompt = f"""Generate {count} realistic job listings for Lucknow, India in JSON format.
 Each job must be for a different area and different category.
 Use these Lucknow areas: {areas_str}
 Use these categories: {cats_str}
@@ -491,27 +515,30 @@ Return ONLY a JSON array (no other text):
   "category": "category slug from the list above"
 }}]"""
 
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0].strip()
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0].strip()
-
-        jobs = json.loads(text)
-        if not isinstance(jobs, list):
-            jobs = [jobs]
-
-        for j in jobs:
-            j["source"] = "gemini-generated"
-
-        log(f"✓ Generated {len(jobs)} jobs")
-        return jobs
-
-    except Exception as e:
-        log(f"⚠️  Gemini generation failed: {e}")
+    text = _call_gemini(prompt)
+    if not text:
         return []
+
+    text = text.strip()
+    if "```json" in text:
+        text = text.split("```json")[1].split("```")[0].strip()
+    elif "```" in text:
+        text = text.split("```")[1].split("```")[0].strip()
+
+    try:
+        jobs = json.loads(text)
+    except json.JSONDecodeError:
+        log("⚠️  Gemini returned invalid JSON")
+        return []
+
+    if not isinstance(jobs, list):
+        jobs = [jobs]
+
+    for j in jobs:
+        j["source"] = "gemini-generated"
+
+    log(f"✓ Generated {len(jobs)} jobs")
+    return jobs
 
 
 # ─── Master Scraper ──────────────────────────────────────────────────────────
@@ -521,7 +548,7 @@ def scrape_all_sources() -> list:
         InternshalaScraper(),
         TimesJobsScraper(),
         FreshersworldScraper(),
-        IndeedScraper(),
+        FounditScraper(),
         GoogleJobsScraper(),
     ]
 
@@ -534,7 +561,6 @@ def scrape_all_sources() -> list:
             log(f"⚠️  {scraper.source_name} failed completely: {e}")
         time.sleep(1)
 
-    # If scraping found nothing, use Gemini as fallback
     if not all_jobs and GEMINI_API_KEY:
         log("\n⚠️  No jobs scraped. Using Gemini AI to generate jobs...")
         generated = generate_jobs_gemini(MAX_JOBS_PER_RUN)
@@ -589,12 +615,15 @@ def build_payload(scraped: dict, hindi: dict) -> dict:
 def main():
     dry_run = "--dry-run" in sys.argv
     log_header()
+
+    if _NEW_GEMINI is None:
+        log("⚠️  google-genai package not installed. Install: pip install google-genai")
+
     posted_jobs = load_posted_jobs()
     posted_count = 0
     skipped_count = 0
     start_time = time.time()
 
-    # Step 1: Scrape
     all_jobs = scrape_all_sources()
     if not all_jobs:
         log("⚠️  No jobs found from any source. Exiting.")
@@ -603,7 +632,6 @@ def main():
 
     log(f"\n🤖 Total scraped: {len(all_jobs)} jobs")
 
-    # Step 2: Deduplicate by title
     seen = set()
     unique_jobs = []
     for j in all_jobs:
@@ -615,7 +643,6 @@ def main():
 
     log(f"🔍 Unique jobs: {len(unique_jobs)}")
 
-    # Step 3: Process each job
     posted_in_session = []
     for i, job in enumerate(unique_jobs):
         if len(posted_in_session) >= MAX_JOBS_PER_RUN:
@@ -629,7 +656,6 @@ def main():
             skipped_count += 1
             continue
 
-        # Step 3a: Convert to Hindi
         log(f"\n🤖 Processing: {job['title'][:60]}...")
         hindi = convert_to_hindi_gemini(job)
 
@@ -643,7 +669,6 @@ def main():
             posted_count += 1
             continue
 
-        # Step 3b: Post to API
         success = post_job(payload)
         if not success:
             log(f"  🔄 Retrying once...")
@@ -660,7 +685,6 @@ def main():
 
         time.sleep(REQUEST_DELAY)
 
-    # Step 4: Save posted jobs
     save_posted_jobs(posted_jobs)
 
     elapsed = time.time() - start_time
