@@ -6,6 +6,8 @@ import CategoryGrid from "@/components/CategoryGrid";
 import JobCard from "@/components/JobCard";
 import AdSenseSlot from "@/components/AdSenseSlot";
 
+export const dynamic = "force-dynamic";
+
 async function getRecentJobs(): Promise<Job[]> {
   try {
     const { data } = await supabase

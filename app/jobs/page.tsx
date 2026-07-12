@@ -5,6 +5,8 @@ import AdSenseSlot from "@/components/AdSenseSlot";
 import Link from "next/link";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "लखनऊ में सभी नौकरियां",
   description: "लखनऊ में उपलब्ध सभी नौकरियां देखें। डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री, टीचिंग और हजारों नौकरियां।",
