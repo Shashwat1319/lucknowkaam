@@ -26,7 +26,10 @@ from typing import Optional
 try:
     import requests
     from bs4 import BeautifulSoup
-    import google.generativeai as genai
+    try:
+        import google.generativeai as genai
+    except ImportError:
+        import google.genai as genai
 except ImportError:
     print("Missing dependencies. Run: pip install -r requirements.txt")
     sys.exit(1)
@@ -83,7 +86,7 @@ def log(msg: str):
     print(f"  {msg}")
 
 
-def log_header(title: str):
+def log_header():
     print(f"\n{'='*60}")
     print(f"  LucknowKaam Auto Job Poster")
     print(f"  Date: {datetime.now().strftime('%d %B %Y, %I:%M %p')}")
