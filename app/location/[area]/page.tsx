@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Job, LUCKNOW_AREAS } from "@/types";
+import { Job, INDIA_CITIES } from "@/types";
 import JobCard from "@/components/JobCard";
 import AdSenseSlot from "@/components/AdSenseSlot";
 import Link from "next/link";
@@ -13,18 +13,18 @@ interface Props {
 }
 
 function getAreaName(areaSlug: string): string | undefined {
-  return LUCKNOW_AREAS.find((a) => a.toLowerCase().replace(/\s+/g, "-") === areaSlug);
+  return INDIA_CITIES.find((a) => a.toLowerCase().replace(/\s+/g, "-") === areaSlug);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const areaName = getAreaName(params.area);
   if (!areaName) return { title: "एरिया नहीं मिला" };
   return {
-    title: `${areaName} लखनऊ में नौकरी | ${areaName} Jobs Lucknow | LucknowKaam`,
-    description: `${areaName}, लखनऊ में नौकरी खोजें। ${areaName} में डिलीवरी, दुकान, ड्राइवर और अन्य नौकरियां।`,
+    title: `${areaName} में नौकरी | ${areaName} Jobs | LucknowKaam`,
+    description: `${areaName} में नौकरी खोजें। ${areaName} में डिलीवरी, दुकान, ड्राइवर और अन्य नौकरियां।`,
     openGraph: {
-      title: `${areaName} लखनऊ में नौकरी`,
-      description: `${areaName}, लखनऊ में नौकरी खोजें।`,
+      title: `${areaName} में नौकरी`,
+      description: `${areaName} में नौकरी खोजें।`,
     },
   };
 }
@@ -76,7 +76,7 @@ export default async function AreaPage({ params }: Props) {
 
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-secondary">
-          {areaName}, लखनऊ में नौकरी
+          {areaName} में नौकरी
         </h1>
         <p className="text-text-secondary">{jobs.length} नौकरियां उपलब्ध</p>
       </div>
@@ -84,8 +84,8 @@ export default async function AreaPage({ params }: Props) {
       <AdSenseSlot slot="location-top-728x90" />
 
       <div className="flex flex-wrap gap-3 mt-6 mb-8">
-        <span className="text-sm font-semibold text-text-secondary">अन्य एरिया:</span>
-        {LUCKNOW_AREAS.filter((a) => a !== areaName).map((a) => (
+        <span className="text-sm font-semibold text-text-secondary">अन्य शहर:</span>
+        {INDIA_CITIES.filter((a) => a !== areaName).map((a) => (
           <Link
             key={a}
             href={`/location/${a.toLowerCase().replace(/\s+/g, "-")}`}

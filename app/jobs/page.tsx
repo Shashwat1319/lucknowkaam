@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Job, CATEGORIES, LUCKNOW_AREAS } from "@/types";
+import { Job, CATEGORIES, INDIA_CITIES } from "@/types";
 import JobCard from "@/components/JobCard";
 import AdSenseSlot from "@/components/AdSenseSlot";
 import Link from "next/link";
@@ -8,11 +8,11 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "लखनऊ में सभी नौकरियां",
-  description: "लखनऊ में उपलब्ध सभी नौकरियां देखें। डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री, टीचिंग और हजारों नौकरियां।",
+  title: "भारत में सभी नौकरियां",
+  description: "दिल्ली, मुंबई, बैंगलोर, लखनऊ और पूरे भारत में उपलब्ध सभी नौकरियां देखें। डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री, टीचिंग और हजारों नौकरियां।",
   openGraph: {
-    title: "लखनऊ में सभी नौकरियां | LucknowKaam",
-    description: "लखनऊ में उपलब्ध सभी नौकरियां देखें।",
+    title: "भारत में सभी नौकरियां | LucknowKaam",
+    description: "पूरे भारत में उपलब्ध सभी नौकरियां देखें।",
   },
 };
 
@@ -93,9 +93,9 @@ export default async function JobsPage({ searchParams }: Props) {
             </div>
 
             <div>
-              <h4 className="font-semibold text-sm text-text-secondary mb-2">एरिया</h4>
+              <h4 className="font-semibold text-sm text-text-secondary mb-2">शहर</h4>
               <div className="flex flex-col gap-1.5">
-                {LUCKNOW_AREAS.map((area) => (
+                {INDIA_CITIES.map((area) => (
                   <Link
                     key={area}
                     href={`/jobs?area=${area}`}
@@ -113,7 +113,7 @@ export default async function JobsPage({ searchParams }: Props) {
           <h1 className="text-2xl md:text-3xl font-bold text-secondary mb-2">
             {searchParams.q
               ? `"${searchParams.q}" के लिए नौकरियां`
-              : "लखनऊ में सभी नौकरियां"}
+              : "भारत में सभी नौकरियां"}
           </h1>
           <p className="text-text-secondary mb-6">
             {jobs.length} नौकरियां उपलब्ध

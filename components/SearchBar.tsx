@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CATEGORIES, LUCKNOW_AREAS } from "@/types";
+import { CATEGORIES, INDIA_CITIES } from "@/types";
 
 export default function SearchBar() {
   const router = useRouter();
@@ -38,8 +38,8 @@ export default function SearchBar() {
             onChange={(e) => setArea(e.target.value)}
             className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-text-primary bg-white"
           >
-            <option value="">सभी एरिया</option>
-            {LUCKNOW_AREAS.map((a) => (
+            <option value="">सभी शहर</option>
+            {INDIA_CITIES.map((a) => (
               <option key={a} value={a}>
                 {a}
               </option>

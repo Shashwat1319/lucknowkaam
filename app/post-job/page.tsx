@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CATEGORIES, LUCKNOW_AREAS } from "@/types";
+import { CATEGORIES, INDIA_CITIES } from "@/types";
 
 export default function PostJobPage() {
   const [formData, setFormData] = useState({
@@ -162,16 +162,16 @@ export default function PostJobPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-text-primary mb-1.5">लोकेशन एरिया *</label>
-            <select
-              name="location_area"
-              required
-              value={formData.location_area}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
-            >
-              <option value="">एरिया चुनें</option>
-              {LUCKNOW_AREAS.map((a) => (
+            <label className="block text-sm font-semibold text-text-primary mb-1.5">शहर *</label>
+              <select
+                name="location_area"
+                required
+                value={formData.location_area}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+              >
+                <option value="">शहर चुनें</option>
+                {INDIA_CITIES.map((a) => (
                 <option key={a} value={a}>{a}</option>
               ))}
             </select>

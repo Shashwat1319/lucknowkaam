@@ -47,11 +47,12 @@ export interface PaidListing {
   created_at: string;
 }
 
-export const LUCKNOW_AREAS = [
-  "Hazratganj", "Gomti Nagar", "Alambagh", "Charbagh",
-  "Aliganj", "Indira Nagar", "Vikas Nagar", "Rajajipuram",
-  "Chinhat", "Faizabad Road", "Kanpur Road", "Mahanagar",
-  "Aminabad", "Kaiserbagh", "Sultanpur Road", "Sitapur Road"
+export const INDIA_CITIES = [
+  "Delhi", "Mumbai", "Bangalore", "Hyderabad",
+  "Chennai", "Kolkata", "Pune", "Ahmedabad",
+  "Lucknow", "Jaipur", "Chandigarh", "Indore",
+  "Bhopal", "Patna", "Nagpur", "Noida",
+  "Gurgaon", "Surat", "Varanasi", "Agra", "Kanpur"
 ] as const;
 
 export const CATEGORIES: Category[] = [
@@ -66,5 +67,6 @@ export const CATEGORIES: Category[] = [
   { id: "9", name_hindi: "मेडिकल", name_english: "Medical/Health", slug: "medical", icon: "🏥", job_count: 0 },
   { id: "10", name_hindi: "सेल्स मार्केटिंग", name_english: "Sales/Marketing", slug: "sales", icon: "💰", job_count: 0 },
   { id: "11", name_hindi: "तकनीकी काम", name_english: "Technical Work", slug: "technical", icon: "🔧", job_count: 0 },
-  { id: "12", name_hindi: "कंप्यूटर का काम", name_english: "Computer Work", slug: "computer", icon: "📱", job_count: 0 }
+  { id: "12", name_hindi: "कंप्यूटर का काम", name_english: "Computer Work", slug: "computer", icon: "📱", job_count: 0 },
+  { id: "13", name_hindi: "सरकारी नौकरी", name_english: "Government Job", slug: "government", icon: "🏛️", job_count: 0 }
 ];

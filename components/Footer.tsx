@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORIES, LUCKNOW_AREAS } from "@/types";
+import { CATEGORIES, INDIA_CITIES } from "@/types";
 
 export default function Footer() {
   return (
@@ -9,7 +9,7 @@ export default function Footer() {
           <div>
             <h3 className="text-2xl font-bold text-primary mb-4">लखनऊ काम</h3>
             <p className="text-gray-300 text-sm leading-relaxed">
-              लखनऊ की #1 लोकल जॉब साइट। हम लखनऊ और आसपास के इलाकों में नौकरी खोजने वालों और नौकरी देने वालों को जोड़ते हैं।
+              भारत की #1 लोकल जॉब साइट। हम पूरे भारत में नौकरी खोजने वालों और नौकरी देने वालों को जोड़ते हैं।
             </p>
           </div>
 
@@ -40,15 +40,15 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-lg mb-4">लखनऊ के एरिया</h4>
+            <h4 className="font-semibold text-lg mb-4">भारत के शहर</h4>
             <div className="flex flex-col gap-2">
-              {LUCKNOW_AREAS.slice(0, 8).map((area) => (
+              {INDIA_CITIES.slice(0, 8).map((city) => (
                 <Link
-                  key={area}
-                  href={`/location/${area.toLowerCase().replace(/\s+/g, "-")}`}
+                  key={city}
+                  href={`/location/${city.toLowerCase().replace(/\s+/g, "-")}`}
                   className="text-gray-300 hover:text-primary text-sm transition-colors"
                 >
-                  {area}
+                  {city}
                 </Link>
               ))}
             </div>
@@ -57,7 +57,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            © 2026 LucknowKaam - लखनऊ की #1 जॉब साइट | लखनऊ में नौकरी खोजें
+            © 2026 LucknowKaam - भारत की #1 जॉब साइट | पूरे भारत में नौकरी खोजें
           </p>
         </div>
       </div>

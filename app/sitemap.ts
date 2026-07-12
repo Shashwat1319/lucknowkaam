@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
-import { CATEGORIES, LUCKNOW_AREAS } from "@/types";
+import { CATEGORIES, INDIA_CITIES } from "@/types";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = "https://lucknowkaam.vercel.app";
@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  const locationEntries = LUCKNOW_AREAS.map((area) => ({
+  const locationEntries = INDIA_CITIES.map((area) => ({
     url: `${siteUrl}/location/${area.toLowerCase().replace(/\s+/g, "-")}`,
     lastModified: new Date().toISOString(),
     changeFrequency: "daily" as const,

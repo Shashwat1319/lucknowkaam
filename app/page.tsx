@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { Job, LUCKNOW_AREAS } from "@/types";
+import { Job, INDIA_CITIES } from "@/types";
 import SearchBar from "@/components/SearchBar";
 import CategoryGrid from "@/components/CategoryGrid";
 import JobCard from "@/components/JobCard";
@@ -94,7 +94,7 @@ export default async function HomePage() {
               लखनऊ में नौकरी खोजें
             </h1>
             <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-              डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री और हजारों नौकरियां — बिल्कुल मुफ्त
+              दिल्ली, मुंबई, लखनऊ, बैंगलोर और पूरे भारत में हजारों नौकरियां — बिल्कुल मुफ्त
             </p>
           </div>
 
@@ -110,11 +110,11 @@ export default async function HomePage() {
               <div className="text-sm text-gray-400">आज की नौकरियां</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary">500+</div>
+              <div className="text-3xl font-bold text-primary">1000+</div>
               <div className="text-sm text-gray-400">कंपनियां</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-success">10K+</div>
+              <div className="text-3xl font-bold text-success">50K+</div>
               <div className="text-sm text-gray-400">नौकरी चाहने वाले</div>
             </div>
           </div>
@@ -154,15 +154,15 @@ export default async function HomePage() {
       )}
 
       <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="section-title">अपने एरिया की नौकरी खोजें</h2>
+        <h2 className="section-title">अपने शहर की नौकरी खोजें</h2>
         <div className="flex flex-wrap justify-center gap-3">
-          {LUCKNOW_AREAS.map((area) => (
+          {INDIA_CITIES.map((city) => (
             <Link
-              key={area}
-              href={`/location/${area.toLowerCase().replace(/\s+/g, "-")}`}
+              key={city}
+              href={`/location/${city.toLowerCase().replace(/\s+/g, "-")}`}
               className="px-5 py-2.5 bg-white border border-border rounded-full text-text-primary hover:border-primary hover:text-primary hover:bg-orange-50 transition-all text-sm font-medium"
             >
-              {area}
+              {city}
             </Link>
           ))}
         </div>
