@@ -110,7 +110,32 @@ def log_footer(posted: int, skipped: int, elapsed: float):
 
 # ─── Duplicate Prevention ────────────────────────────────────────────────────
 
+SUPABASE_URL = "https://rswszmbzykrzidndyeed.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzd3N6bWJ6eWtyemlkbmR5ZWVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NjM1MDUsImV4cCI6MjA5OTMzOTUwNX0.KuJ69svXdlGQsjmw5f3rHydvYtfHp6lh7XH4axeI9Z4"
+
+def fetch_existing_slugs() -> set:
+    try:
+        resp = requests.get(
+            f"{SUPABASE_URL}/rest/v1/jobs?select=slug",
+            headers={
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+            },
+            timeout=10,
+        )
+        if resp.status_code == 200:
+            slugs = {item["slug"] for item in resp.json()}
+            log(f"📋 Loaded {len(slugs)} existing slugs from database")
+            return slugs
+    except Exception as e:
+        log(f"⚠️  Could not fetch slugs from DB: {e}")
+    return set()
+
+
 def load_posted_jobs() -> set:
+    slugs = fetch_existing_slugs()
+    if slugs:
+        return slugs
     try:
         with open(POSTED_JOBS_FILE, "r") as f:
             return set(json.load(f))
@@ -161,33 +186,33 @@ def detect_job_type(title: str, description: str = "") -> str:
 
 # ─── Gemini AI Hindi Converter ───────────────────────────────────────────────
 
+_GEMINI_UNAVAILABLE = False
+
 def _call_gemini(prompt: str) -> Optional[str]:
-    if not GEMINI_API_KEY:
+    global _GEMINI_UNAVAILABLE
+    if not GEMINI_API_KEY or _GEMINI_UNAVAILABLE:
         return None
-    for attempt in range(2):
-        try:
-            if _NEW_GEMINI:
-                client = gemini_client.Client(api_key=GEMINI_API_KEY)
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash",
-                    contents=prompt,
-                )
-                return response.text
-            else:
-                genai.configure(api_key=GEMINI_API_KEY)
-                model = genai.GenerativeModel("gemini-1.5-flash")
-                response = model.generate_content(prompt)
-                return response.text
-        except Exception as e:
-            err_str = str(e)
-            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                if attempt == 0:
-                    log(f"⏳ Gemini quota exceeded, switching to basic Hindi...")
-                    time.sleep(5)
-                    continue
+    try:
+        if _NEW_GEMINI:
+            client = gemini_client.Client(api_key=GEMINI_API_KEY)
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+            )
+            return response.text
+        else:
+            genai.configure(api_key=GEMINI_API_KEY)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
+            return response.text
+    except Exception as e:
+        err = str(e)
+        if "429" in err or "RESOURCE_EXHAUSTED" in err:
+            log(f"⏳ Gemini quota exceeded, disabling for this run")
+            _GEMINI_UNAVAILABLE = True
+        else:
             log(f"⚠️  Gemini API error: {e}")
-            return None
-    return None
+        return None
 
 
 def convert_to_hindi_gemini(job_data: dict) -> dict:
@@ -504,7 +529,6 @@ Return ONLY a JSON array (no other text):
 def scrape_all_sources() -> list:
     scrapers = [
         InternshalaScraper(),
-        FounditScraper(),
     ]
 
     all_jobs = []
