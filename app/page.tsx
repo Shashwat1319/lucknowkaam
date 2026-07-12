@@ -24,20 +24,19 @@ async function getRecentJobs(): Promise<Job[]> {
 
 async function getJobStats() {
   try {
-    const { count: totalJobs } = await supabase
+    const { data: allJobs } = await supabase
       .from("jobs")
-      .select("*", { count: "exact", head: true })
+      .select("id,posted_at")
       .eq("is_active", true);
+
+    if (!allJobs) return { totalJobs: 0, todayJobs: 0 };
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const { count: todayJobs } = await supabase
-      .from("jobs")
-      .select("*", { count: "exact", head: true })
-      .eq("is_active", true)
-      .gte("posted_at", today.toISOString());
+    const todayStr = today.toISOString();
+    const todayJobs = allJobs.filter(j => j.posted_at >= todayStr).length;
 
-    return { totalJobs: totalJobs || 0, todayJobs: todayJobs || 0 };
+    return { totalJobs: allJobs.length, todayJobs };
   } catch {
     return { totalJobs: 0, todayJobs: 0 };
   }
