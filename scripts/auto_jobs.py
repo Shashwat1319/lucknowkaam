@@ -161,10 +161,10 @@ def detect_job_type(title: str, description: str = "") -> str:
 
 # ─── Gemini AI Hindi Converter ───────────────────────────────────────────────
 
-def _call_gemini(prompt: str, max_retries: int = 3) -> Optional[str]:
+def _call_gemini(prompt: str) -> Optional[str]:
     if not GEMINI_API_KEY:
         return None
-    for attempt in range(max_retries):
+    for attempt in range(2):
         try:
             if _NEW_GEMINI:
                 client = gemini_client.Client(api_key=GEMINI_API_KEY)
@@ -181,13 +181,12 @@ def _call_gemini(prompt: str, max_retries: int = 3) -> Optional[str]:
         except Exception as e:
             err_str = str(e)
             if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                delay = (2 ** attempt) * 10
-                log(f"⏳ Gemini rate limit (attempt {attempt+1}/{max_retries}), retrying in {delay}s...")
-                time.sleep(delay)
-                continue
+                if attempt == 0:
+                    log(f"⏳ Gemini quota exceeded, switching to basic Hindi...")
+                    time.sleep(5)
+                    continue
             log(f"⚠️  Gemini API error: {e}")
             return None
-    log(f"⚠️  Gemini exhausted after {max_retries} retries")
     return None
 
 
