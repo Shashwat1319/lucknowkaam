@@ -330,19 +330,25 @@ class InternshalaScraper(BaseScraper):
         try:
             seg = url.rstrip("/").split("/")[-1]
             seg = seg.split("?")[0]
-            parts = seg.split("-job-in-")
-            if len(parts) >= 2:
-                title = parts[0].replace("-", " ").title()
-                rest = parts[1]
-                segments = rest.split("-at-")
-                if len(segments) >= 2:
-                    location = segments[0].replace("-", " ").title()
-                    company = segments[1]
-                    company = re.sub(r'\d+.*$', '', company).replace("-", " ").title().strip()
-                else:
-                    location = rest.replace("-", " ").title()
+            loc_part = "Lucknow"
+            co_part = "Company"
+            for sep in ("-job-in-", "-job-at-", "-jobs-in-"):
+                if sep in seg:
+                    parts = seg.split(sep, 1)
+                    title = parts[0].replace("-", " ").title()
+                    rest = parts[1]
+                    segments = rest.split("-at-")
+                    if len(segments) >= 2:
+                        loc_part = segments[0].replace("-", " ").title()
+                        co_part = segments[1]
+                        co_part = re.sub(r'\d+.*$', '', co_part).replace("-", " ").title().strip()
+                    else:
+                        loc_part = rest.replace("-", " ").title()
+                    break
             else:
                 title = seg.replace("-", " ").title()
+            location = loc_part if "lucknow" in loc_part.lower() else "Lucknow"
+            company = co_part
         except Exception:
             pass
         return title, location, company
@@ -371,7 +377,7 @@ class InternshalaScraper(BaseScraper):
                         jobs.append({
                             "title": title,
                             "company": company,
-                            "location": location if "lucknow" in location.lower() else "Lucknow",
+                            "location": location,
                             "description": title,
                             "salary": "वेतन पर बातचीत",
                             "source": "internshala",
