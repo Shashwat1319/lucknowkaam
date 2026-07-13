@@ -213,14 +213,31 @@ def load_posted_jobs() -> set:
         return slugs
     try:
         with open(POSTED_JOBS_FILE, "r") as f:
-            return set(json.load(f))
+            data = json.load(f)
+            if isinstance(data, dict):
+                return set(data.get("slugs", []))
+            return set(data)
     except (FileNotFoundError, json.JSONDecodeError):
         return set()
 
 
 def save_posted_jobs(posted: set):
+    today = datetime.now().strftime("%Y-%m-%d")
+    data = {"slugs": sorted(posted), "__meta__": {"last_run": today, "count": len(posted)}}
     with open(POSTED_JOBS_FILE, "w") as f:
-        json.dump(sorted(posted), f, indent=2)
+        json.dump(data, f, indent=2)
+
+
+def already_ran_today(posted_count: int) -> bool:
+    try:
+        with open(POSTED_JOBS_FILE, "r") as f:
+            data = json.load(f)
+            meta = data.get("__meta__", {}) if isinstance(data, dict) else {}
+            if meta.get("last_run") == datetime.now().strftime("%Y-%m-%d") and meta.get("count", 0) >= posted_count:
+                return True
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+    return False
 
 
 def generate_slug(company: str, title: str, location: str) -> str:
@@ -773,6 +790,11 @@ def main():
     skipped_count = 0
     failed_count = 0
     start_time = time.time()
+
+    if already_ran_today(5):
+        log(f"✓ Already ran today ({len(all_posted_slugs)} jobs posted). Exiting.")
+        log_footer(0, 0, 0, time.time() - start_time)
+        return
 
     all_jobs = scrape_all_sources()
     if not all_jobs:
