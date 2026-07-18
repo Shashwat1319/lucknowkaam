@@ -1,5 +1,9 @@
 name: Daily Job Auto Poster
 
+concurrency:
+  group: daily-jobs
+  cancel-in-progress: false
+
 on:
   schedule:
     - cron: '30 0 * * *'
@@ -10,8 +14,9 @@ on:
 jobs:
   post-jobs:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4

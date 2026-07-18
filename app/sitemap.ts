@@ -5,21 +5,20 @@ import { CATEGORIES, INDIA_CITIES } from "@/types";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = "https://lucknowkaam.vercel.app";
 
-  let slugs: { slug: string }[] = [];
+  let jobs: { slug: string; posted_at: string }[] = [];
   try {
     const { data } = await supabase
       .from("jobs")
-      .select("slug")
+      .select("slug, posted_at")
       .eq("is_active", true)
       .order("posted_at", { ascending: false })
       .limit(1000);
-    slugs = (data as { slug: string }[]) || [];
+    jobs = (data as { slug: string; posted_at: string }[]) || [];
   } catch {}
 
-  const now = new Date().toISOString();
-  const jobEntries = slugs.map((job) => ({
+  const jobEntries = jobs.map((job) => ({
     url: `${siteUrl}/jobs/${job.slug}`,
-    lastModified: now,
+    lastModified: job.posted_at,
     changeFrequency: "daily" as const,
     priority: 0.8,
   }));

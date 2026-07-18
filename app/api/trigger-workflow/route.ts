@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
+  const contentLength = parseInt(request.headers.get("content-length") || "0");
+  if (contentLength > 1024) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
+
   const authHeader = request.headers.get("authorization");
   const apiKey = process.env.API_SECRET_KEY;
 
@@ -27,9 +32,12 @@ export async function GET(request: Request) {
   );
 
   if (!res.ok) {
-    const text = await res.text();
-    return NextResponse.json({ error: `GitHub API error: ${res.status} ${text}` }, { status: 502 });
+    return NextResponse.json({ error: `GitHub API error: ${res.status}` }, { status: 502 });
   }
 
   return NextResponse.json({ success: true });
+}
+
+export async function GET() {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 }

@@ -820,9 +820,6 @@ def main():
     log(f"  🔄 New after dedup: {new_after_dedup} jobs")
     log(f"  🤖 Gemini calls: {_gemini_calls_today}/{GEMINI_DAILY_LIMIT}")
 
-    if _gemini_calls_today > 0:
-        pass
-
     print(f"  {'─'*42}")
 
     posted_in_session = []

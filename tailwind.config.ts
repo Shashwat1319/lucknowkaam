@@ -19,7 +19,7 @@ const config: Config = {
         border: "#E5E7EB",
       },
       fontFamily: {
-        hindi: ["'Noto Sans Devanagari'", "sans-serif"],
+        hindi: ["var(--font-noto)", "sans-serif"],
       },
     },
   },

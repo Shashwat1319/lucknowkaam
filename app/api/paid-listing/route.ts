@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+const MAX_PAYLOAD_SIZE = 50 * 1024;
+
 export async function POST(request: Request) {
   try {
+    const contentLength = parseInt(request.headers.get("content-length") || "0");
+    if (contentLength > MAX_PAYLOAD_SIZE) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
+
     const body = await request.json();
 
     const {
@@ -27,6 +34,8 @@ export async function POST(request: Request) {
       contact_phone,
       job_title,
       job_description: job_description || "",
+      location_area,
+      category,
       payment_status: "pending",
       amount: 299,
     });

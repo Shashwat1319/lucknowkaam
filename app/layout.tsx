@@ -1,31 +1,39 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileNav from "@/components/MobileNav";
 
+const noto = Noto_Sans_Devanagari({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-noto",
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "LucknowKaam - लखनऊ में नौकरी खोजें | लखनऊ की #1 जॉब साइट",
-    template: "%s | LucknowKaam - लखनऊ में नौकरी",
+    default: "LucknowKaam - भारत में नौकरी खोजें | India's #1 Hindi Job Site",
+    template: "%s | LucknowKaam - भारत में नौकरी",
   },
   description:
-    "लखनऊ में नौकरी खोजें। डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री, टीचिंग और हजारों नौकरियां — बिल्कुल मुफ्त। LucknowKaam लखनऊ की #1 लोकल जॉब साइट है।",
+    "पूरे भारत में नौकरी खोजें। डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री, टीचिंग और हजारों नौकरियां — बिल्कुल मुफ्त। LucknowKaam भारत की #1 हिंदी जॉब साइट है।",
   keywords: [
-    "लखनऊ नौकरी",
-    "Lucknow jobs",
-    "लखनऊ में नौकरी",
-    "Lucknow local jobs",
+    "भारत में नौकरी",
+    "India jobs",
+    "हिंदी नौकरी",
     "डिलीवरी बॉय जॉब",
-    "लखनऊ काम",
     "LucknowKaam",
+    "नौकरी खोजें",
+    "local jobs India",
   ],
   metadataBase: new URL("https://lucknowkaam.vercel.app"),
   openGraph: {
-    title: "LucknowKaam - लखनऊ में नौकरी खोजें",
+    title: "LucknowKaam - भारत में नौकरी खोजें",
     description:
-      "लखनऊ में नौकरी खोजें। डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री और हजारों नौकरियां — बिल्कुल मुफ्त।",
+      "पूरे भारत में नौकरी खोजें। डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री और हजारों नौकरियां — बिल्कुल मुफ्त।",
     url: "https://lucknowkaam.vercel.app",
     siteName: "LucknowKaam",
     locale: "hi_IN",
@@ -35,15 +43,15 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "LucknowKaam - लखनऊ में नौकरी",
+        alt: "LucknowKaam - भारत में नौकरी खोजें",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "LucknowKaam - लखनऊ में नौकरी खोजें",
+    title: "LucknowKaam - भारत में नौकरी खोजें",
     description:
-      "लखनऊ में नौकरी खोजें। डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री और हजारों नौकरियां — बिल्कुल मुफ्त।",
+      "पूरे भारत में नौकरी खोजें। डिलीवरी, दुकान, ड्राइवर, डेटा एंट्री और हजारों नौकरियां — बिल्कुल मुफ्त।",
     images: ["/og-image.png"],
   },
   robots: {
@@ -83,20 +91,23 @@ export default function RootLayout({
                 target: {
                   "@type": "EntryPoint",
                   urlTemplate:
-                    "https://lucknowkaam.vercel.app/?search={search_term_string}",
+                    "https://lucknowkaam.vercel.app/jobs?q={search_term_string}",
                 },
                 "query-input": "required name=search_term_string",
               },
               description:
-                "लखनऊ में नौकरी खोजें - LucknowKiNaukri",
+                "भारत में नौकरी खोजें - LucknowKaam",
               inLanguage: "hi",
             }),
           }}
         />
       </head>
-      <body className="font-hindi bg-background text-text-primary antialiased">
+      <body className={`${noto.variable} font-hindi bg-background text-text-primary antialiased`}>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-[100] focus:p-4 focus:bg-primary focus:text-white focus:outline-none">
+          मुख्य सामग्री पर जाएं
+        </a>
         <Header />
-        <main className="min-h-screen">{children}</main>
+        <main id="main-content" className="min-h-screen">{children}</main>
         <Footer />
         <MobileNav />
       </body>

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "हमारे बारे में",
-  description: "LucknowKaam के बारे में जानें। लखनऊ की #1 लोकल जॉब साइट।",
+  description: "LucknowKaam के बारे में जानें। भारत की #1 हिंदी जॉब साइट।",
 };
 
 export default function AboutPage() {
@@ -35,13 +35,13 @@ export default function AboutPage() {
 
       <div className="space-y-6 text-text-secondary leading-relaxed">
         <p className="text-lg">
-          <strong>LucknowKaam</strong> लखनऊ की #1 लोकल जॉब साइट है। हमारा मकसद
-          लखनऊ और आसपास के इलाकों में नौकरी खोजने वालों को उनकी पसंद की नौकरी
+          <strong>LucknowKaam</strong> भारत की #1 हिंदी जॉब साइट है। हमारा मकसद
+          पूरे भारत में नौकरी खोजने वालों को उनकी पसंद की नौकरी
           दिलाना है।
         </p>
 
         <p>
-          हम जानते हैं कि लखनऊ में हजारों लोग रोजाना नौकरी खोजते हैं। डिलीवरी बॉय
+          दिल्ली, मुंबई, बैंगलोर, लखनऊ — हर शहर में हजारों लोग रोजाना नौकरी खोजते हैं। डिलीवरी बॉय
           से लेकर दुकान का काम, ड्राइवर, डेटा एंट्री, टीचिंग और घर से काम —
           हर तरह की नौकरी आपको यहां मिलेगी।
         </p>
@@ -51,7 +51,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           {[
             { title: "100% मुफ्त", desc: "नौकरी खोजना और अप्लाई करना बिल्कुल मुफ्त है" },
-            { title: "लोकल जॉब", desc: "सिर्फ लखनऊ और आसपास के इलाकों की नौकरियां" },
+            { title: "ऑल इंडिया जॉब", desc: "पूरे भारत के शहरों से नौकरियां" },
             { title: "हिंदी में", desc: "पूरी जानकारी हिंदी भाषा में, समझने में आसान" },
             { title: "हर दिन नई जॉब", desc: "रोजाना नई नौकरियां अपडेट की जाती हैं" },
             { title: "आसान अप्लाई", desc: "एक क्लिक में कॉल या WhatsApp करें" },

@@ -66,7 +66,8 @@ export default function Header() {
           <button
             className="md:hidden p-2"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Menu"
+            aria-label="मेन्यू"
+            aria-expanded={menuOpen}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {menuOpen ? (

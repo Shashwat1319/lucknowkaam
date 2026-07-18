@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       job.title_english,
       `${job.location_area} नौकरी`,
       `${job.company_name} नौकरी`,
-      `लखनऊ ${job.category} नौकरी`,
+      `${job.category} नौकरी भारत`,
     ],
     openGraph: {
       title,

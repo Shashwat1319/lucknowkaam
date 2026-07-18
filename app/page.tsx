@@ -82,7 +82,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
             <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
-              लखनऊ में नौकरी खोजें
+              भारत में नौकरी खोजें
             </h1>
             <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
               दिल्ली, मुंबई, लखनऊ, बैंगलोर और पूरे भारत में हजारों नौकरियां — बिल्कुल मुफ्त
@@ -161,12 +161,12 @@ export default async function HomePage() {
 
       <section className="bg-white py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="section-title">लखनऊ में हजारों लोगों ने पाई नौकरी</h2>
+          <h2 className="section-title">हजारों लोगों ने पाई नौकरी</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { name: "राजेश कुमार", text: "डिलीवरी बॉय की नौकरी मिली, बहुत अच्छा प्लेटफॉर्म है", area: "गोमती नगर" },
-              { name: "सुनीता देवी", text: "डेटा एंट्री का काम मिला, घर से काम करती हूं", area: "हजरतगंज" },
-              { name: "अमित शर्मा", text: "दुकान का काम चाहिए था, 2 दिन में मिल गया", area: "आलमबाग" },
+              { name: "राजेश कुमार", text: "डिलीवरी बॉय की नौकरी मिली, बहुत अच्छा प्लेटफॉर्म है", area: "लखनऊ" },
+              { name: "सुनीता देवी", text: "डेटा एंट्री का काम मिला, घर से काम करती हूं", area: "दिल्ली" },
+              { name: "अमित शर्मा", text: "दुकान का काम चाहिए था, 2 दिन में मिल गया", area: "मुंबई" },
             ].map((t, i) => (
               <div key={i} className="card p-6 text-center">
                 <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">

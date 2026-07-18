@@ -2,10 +2,17 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { generateSlug } from "@/lib/utils";
 
+const MAX_PAYLOAD_SIZE = 50 * 1024; // 50KB
+
 export async function POST(request: Request) {
   try {
+    const contentLength = parseInt(request.headers.get("content-length") || "0");
+    if (contentLength > MAX_PAYLOAD_SIZE) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
+
     const body = await request.json();
-    const apiKey = request.headers.get("x-api-key") || body.api_key;
+    const apiKey = request.headers.get("x-api-key");
 
     if (!apiKey || apiKey !== process.env.API_SECRET_KEY) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -32,12 +39,19 @@ export async function POST(request: Request) {
 
     if (!title_hindi || !company_name || !location_area || !category) {
       return NextResponse.json(
-        { error: "Missing required fields: title_hindi, company_name, location_area, category" },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    const slug = custom_slug || (generateSlug(title_hindi) + "-" + location_area.toLowerCase().replace(/\s+/g, "-") + "-lucknow-" + Date.now());
+    if ([title_hindi, company_name, location_area, category].some(v => v.length > 500)) {
+      return NextResponse.json({ error: "Field too long" }, { status: 400 });
+    }
+    if (description_hindi && description_hindi.length > 5000) {
+      return NextResponse.json({ error: "Description too long" }, { status: 400 });
+    }
+
+    const slug = custom_slug || (generateSlug(title_hindi) + "-" + location_area.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now());
 
     const { data, error } = await supabaseAdmin
       .from("jobs")

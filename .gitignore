@@ -41,3 +41,6 @@ scripts/.env
 .env
 .env.local
 .env.local.example
+
+# auto-generated runtime data
+/scripts/posted_jobs.json
