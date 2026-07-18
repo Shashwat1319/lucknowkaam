@@ -168,8 +168,8 @@ def clean_company_name(raw_name: str) -> str:
 
 # ─── Permanent Dedup (Supabase posted_slugs table) ───────────────────────────
 
-SUPABASE_URL = "https://rswszmbzykrzidndyeed.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzd3N6bWJ6eWtyemlkbmR5ZWVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NjM1MDUsImV4cCI6MjA5OTMzOTUwNX0.KuJ69svXdlGQsjmw5f3rHydvYtfHp6lh7XH4axeI9Z4"
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://rswszmbzykrzidndyeed.supabase.co")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
 
 def fetch_all_posted_slugs() -> set:
     try:

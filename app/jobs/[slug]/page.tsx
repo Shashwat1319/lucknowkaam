@@ -128,7 +128,7 @@ export default async function JobDetailPage({ params }: Props) {
                 <div>
                   <p className="text-xs text-text-secondary">स्थान</p>
                   <Link href={`/location/${job.location_area.toLowerCase().replace(/\s+/g, "-")}`} className="font-semibold text-primary hover:underline">
-                    {job.location_area}, लखनऊ
+                    {job.location_area}
                   </Link>
                 </div>
                 <div>

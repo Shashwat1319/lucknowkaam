@@ -3,7 +3,7 @@ import { Job } from "@/types";
 import { timeAgo, getJobTypeHindi } from "@/lib/utils";
 
 export default function JobCard({ job }: { job: Job }) {
-  const slug = job.slug || `${job.title_english.toLowerCase().replace(/\s+/g, "-")}-${job.location_area.toLowerCase().replace(/\s+/g, "-")}-lucknow`;
+  const slug = job.slug || `${job.title_english.toLowerCase().replace(/\s+/g, "-")}-${job.location_area.toLowerCase().replace(/\s+/g, "-")}`;
 
   return (
     <Link href={`/jobs/${slug}`}>

@@ -1,28 +1,19 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "संपर्क करें",
-  description: "LucknowKaam से संपर्क करें। हमें अपने सवाल या सुझाव भेजें।",
-};
-
 export default function ContactPage() {
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitted(true);
+    (e.target as HTMLFormElement).reset();
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "होम", item: "https://lucknowkaam.vercel.app" },
-              { "@type": "ListItem", position: 2, name: "संपर्क", item: "https://lucknowkaam.vercel.app/contact" },
-            ],
-          }),
-        }}
-      />
-
       <nav className="text-sm text-text-secondary mb-6">
         <Link href="/" className="hover:text-primary">होम</Link>
         <span className="mx-2">›</span>
@@ -63,32 +54,43 @@ export default function ContactPage() {
 
         <div className="card p-6">
           <h2 className="text-xl font-bold text-text-primary mb-4">हमें संदेश भेजें</h2>
-          <form className="space-y-4">
-            <div>
-              <input
-                type="text"
-                placeholder="आपका नाम"
-                className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
+          {submitted ? (
+            <div className="text-center py-8">
+              <p className="text-success text-lg font-semibold mb-2">✓ आपका संदेश भेज दिया गया है!</p>
+              <p className="text-text-secondary">हम जल्द ही आपसे संपर्क करेंगे।</p>
+              <button onClick={() => setSubmitted(false)} className="btn-primary mt-4">नया संदेश</button>
             </div>
-            <div>
-              <input
-                type="email"
-                placeholder="ईमेल पता"
-                className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-            </div>
-            <div>
-              <textarea
-                rows={4}
-                placeholder="आपका संदेश"
-                className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-            </div>
-            <button type="submit" className="btn-primary w-full">
-              संदेश भेजें
-            </button>
-          </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <input
+                  type="text"
+                  required
+                  placeholder="आपका नाम"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+              </div>
+              <div>
+                <input
+                  type="email"
+                  required
+                  placeholder="ईमेल पता"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+              </div>
+              <div>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="आपका संदेश"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+              </div>
+              <button type="submit" className="btn-primary w-full">
+                संदेश भेजें
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

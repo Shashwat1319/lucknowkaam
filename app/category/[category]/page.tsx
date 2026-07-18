@@ -20,11 +20,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cat = getCategory(params.category);
   const name = cat ? cat.name_hindi : params.category;
   return {
-    title: `${name} - लखनऊ में ${name} की नौकरी | LucknowKaam`,
-    description: `लखनऊ में ${name} की नौकरी खोजें। ₹${name} की लेटेस्ट जॉब लखनऊ में।`,
+    title: `${name} की नौकरी | ${name} Jobs India | LucknowKaam`,
+    description: `पूरे भारत में ${name} की नौकरी खोजें। ${name} jobs across India।`,
     openGraph: {
-      title: `${name} - लखनऊ में ${name} की नौकरी`,
-      description: `लखनऊ में ${name} की नौकरी खोजें।`,
+      title: `${name} की नौकरी - India`,
+      description: `पूरे भारत में ${name} की नौकरी खोजें।`,
     },
   };
 }
@@ -76,7 +76,7 @@ export default async function CategoryPage({ params }: Props) {
         <span className="text-4xl">{cat.icon}</span>
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-secondary">
-            लखनऊ में {cat.name_hindi} की नौकरी
+            {cat.name_hindi} की नौकरी
           </h1>
           <p className="text-text-secondary">{jobs.length} नौकरियां उपलब्ध</p>
         </div>

@@ -15,7 +15,7 @@ export default function AdSenseSlot({ slot, format = "auto" }: { slot: string; f
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
-        data-ad-client={`ca-pub-${process.env.NEXT_PUBLIC_ADSENSE_ID || "placeholder"}`}
+        data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_ID || "ca-pub-placeholder"}
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"

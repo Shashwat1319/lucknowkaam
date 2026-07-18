@@ -55,20 +55,11 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "LocalBusiness",
+            "@type": "Organization",
             name: "LucknowKaam",
             url: "https://lucknowkaam.vercel.app",
-            areaServed: {
-              "@type": "City",
-              name: "Lucknow",
-            },
-            address: {
-              "@type": "PostalAddress",
-              addressLocality: "Lucknow",
-              addressRegion: "Uttar Pradesh",
-              addressCountry: "IN",
-            },
-            description: "लखनऊ में नौकरी खोजें - LucknowKiNaukri",
+            areaServed: "India",
+            description: "पूरे भारत में नौकरी खोजें - LucknowKaam",
             inLanguage: "hi",
           }),
         }}

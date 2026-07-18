@@ -25,5 +25,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           LUCKNOWKAAM_API_KEY: ${{ secrets.LUCKNOWKAAM_API_KEY }}
+          SUPABASE_URL: https://rswszmbzykrzidndyeed.supabase.co
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SITE_URL: https://lucknowkaam.vercel.app
         run: python scripts/auto_jobs.py
