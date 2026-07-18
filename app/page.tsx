@@ -6,7 +6,7 @@ import CategoryGrid from "@/components/CategoryGrid";
 import JobCard from "@/components/JobCard";
 import AdSenseSlot from "@/components/AdSenseSlot";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 async function getRecentJobs(): Promise<Job[]> {
   try {
@@ -24,19 +24,22 @@ async function getRecentJobs(): Promise<Job[]> {
 
 async function getJobStats() {
   try {
-    const { data: allJobs } = await supabase
-      .from("jobs")
-      .select("id,posted_at")
-      .eq("is_active", true);
-
-    if (!allJobs) return { totalJobs: 0, todayJobs: 0 };
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayStr = today.toISOString();
-    const todayJobs = allJobs.filter(j => j.posted_at >= todayStr).length;
 
-    return { totalJobs: allJobs.length, todayJobs };
+    const { count: totalJobs } = await supabase
+      .from("jobs")
+      .select("*", { count: "exact", head: true })
+      .eq("is_active", true);
+
+    const { count: todayJobs } = await supabase
+      .from("jobs")
+      .select("*", { count: "exact", head: true })
+      .eq("is_active", true)
+      .gte("posted_at", todayStr);
+
+    return { totalJobs: totalJobs || 0, todayJobs: todayJobs || 0 };
   } catch {
     return { totalJobs: 0, todayJobs: 0 };
   }

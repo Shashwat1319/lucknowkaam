@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { generateSlug } from "@/lib/utils";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const MAX_PAYLOAD_SIZE = 50 * 1024; // 50KB
 
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
+  const { allowed, resetAt } = checkRateLimit(ip);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) } }
+    );
+  }
+
   try {
     const contentLength = parseInt(request.headers.get("content-length") || "0");
     if (contentLength > MAX_PAYLOAD_SIZE) {

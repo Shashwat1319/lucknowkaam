@@ -3,10 +3,14 @@ import { Job, CATEGORIES } from "@/types";
 import { formatDate, getJobTypeHindi } from "@/lib/utils";
 import JobSchema from "@/components/JobSchema";
 import AdSenseSlot from "@/components/AdSenseSlot";
-import ShareButton from "@/components/ShareButton";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+
+const ShareButton = dynamic(() => import("@/components/ShareButton"), {
+  loading: () => <div className="h-40 bg-gray-50 rounded-lg animate-pulse" />,
+});
 
 interface Props {
   params: { slug: string };
@@ -251,7 +255,7 @@ export async function generateStaticParams() {
       .from("jobs")
       .select("slug")
       .eq("is_active", true)
-      .limit(100);
+      .limit(1000);
     return (data || []).map((job: { slug: string }) => ({ slug: job.slug }));
   } catch {
     return [];

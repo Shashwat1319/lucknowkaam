@@ -33,4 +33,4 @@ jobs:
           SUPABASE_URL: https://rswszmbzykrzidndyeed.supabase.co
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SITE_URL: https://lucknowkaam.vercel.app
-        run: python scripts/auto_jobs.py
+        run: python scripts/main.py
