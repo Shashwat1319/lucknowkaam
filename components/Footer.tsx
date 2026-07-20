@@ -56,6 +56,11 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+          <div className="flex justify-center gap-6 mb-4 text-sm">
+            <Link href="/privacy" className="text-gray-300 hover:text-primary transition-colors">प्राइवेसी पॉलिसी</Link>
+            <Link href="/terms" className="text-gray-300 hover:text-primary transition-colors">सेवा की शर्तें</Link>
+            <Link href="/contact" className="text-gray-300 hover:text-primary transition-colors">संपर्क</Link>
+          </div>
           <p className="text-gray-400 text-sm">
             © 2026 LucknowKaam - भारत की #1 जॉब साइट | पूरे भारत में नौकरी खोजें
           </p>

@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileNav from "@/components/MobileNav";
+import CookieConsent from "@/components/CookieConsent";
 
 const noto = Noto_Sans_Devanagari({
   subsets: ["latin"],
@@ -110,6 +111,7 @@ export default function RootLayout({
         <main id="main-content" className="min-h-screen">{children}</main>
         <Footer />
         <MobileNav />
+        <CookieConsent />
       </body>
     </html>
   );
