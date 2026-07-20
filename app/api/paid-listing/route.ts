@@ -38,23 +38,27 @@ export async function POST(request: Request) {
       );
     }
 
-    const { error } = await supabaseAdmin.from("paid_listings").insert({
-      company_name,
-      contact_email: body.contact_email || "",
-      contact_phone,
-      job_title,
-      job_description: job_description || "",
-      location_area,
-      category,
-      payment_status: "pending",
-      amount: 299,
-    });
+    const { data: listing, error } = await supabaseAdmin
+      .from("paid_listings")
+      .insert({
+        company_name,
+        contact_email: body.contact_email || "",
+        contact_phone,
+        job_title,
+        job_description: job_description || "",
+        location_area,
+        category,
+        payment_status: "pending",
+        amount: 299,
+      })
+      .select()
+      .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error || !listing) {
+      return NextResponse.json({ error: error?.message || "Failed to create listing" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true }, { status: 201 });
+    return NextResponse.json({ success: true, id: listing.id }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }

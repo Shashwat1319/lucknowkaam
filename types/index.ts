@@ -42,8 +42,12 @@ export interface PaidListing {
   contact_phone: string;
   job_title: string;
   job_description: string;
+  location_area: string;
+  category: string;
   payment_status: string;
   amount: number;
+  razorpay_order_id?: string;
+  razorpay_payment_id?: string;
   created_at: string;
 }
 
