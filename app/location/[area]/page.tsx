@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Job, INDIA_CITIES } from "@/types";
+import { Job, INDIA_CITIES, CATEGORIES } from "@/types";
 import JobCard from "@/components/JobCard";
 import AdSenseSlot from "@/components/AdSenseSlot";
 import Link from "next/link";
@@ -92,6 +92,19 @@ export default async function AreaPage({ params }: Props) {
             className="text-sm px-3 py-1.5 bg-white border border-border rounded-full text-text-secondary hover:border-primary hover:text-primary transition-colors"
           >
             {a}
+          </Link>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-3 mb-8">
+        <span className="text-sm font-semibold text-text-secondary">{areaName} में नौकरी के प्रकार:</span>
+        {CATEGORIES.map((c) => (
+          <Link
+            key={c.slug}
+            href={`/jobs-in/${params.area}/${c.slug}`}
+            className="text-sm px-3 py-1.5 bg-white border border-border rounded-full text-text-secondary hover:border-primary hover:text-primary transition-colors"
+          >
+            {c.icon} {c.name_hindi}
           </Link>
         ))}
       </div>

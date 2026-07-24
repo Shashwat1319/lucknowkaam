@@ -61,6 +61,9 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://lucknowkaam.vercel.app",
+    languages: {
+      "hi-IN": "https://lucknowkaam.vercel.app",
+    },
   },
 };
 

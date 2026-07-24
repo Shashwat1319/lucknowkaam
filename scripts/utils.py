@@ -29,6 +29,7 @@ CATEGORY_KEYWORDS = {
     "sales": ["sales", "marketing", "telecaller", "सेल्स", "marketing", "business"],
     "technical": ["technical", "engineer", "mechanic", "technician", "तकनीकी"],
     "computer": ["computer", "graphic", "designer", "web", "software", "कंप्यूटर", "it "],
+    "security": ["security", "guard", "सिक्योरिटी", "watchman", "चौकीदार"],
     "government": ["government", "sarkari", "सरकारी", "govt", "railway", "bank", "police", "ssc", "upsc"],
 }
 

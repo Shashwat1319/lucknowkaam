@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Job, CATEGORIES } from "@/types";
+import { Job, CATEGORIES, INDIA_CITIES } from "@/types";
 import JobCard from "@/components/JobCard";
 import AdSenseSlot from "@/components/AdSenseSlot";
 import Link from "next/link";
@@ -95,6 +95,22 @@ export default async function CategoryPage({ params }: Props) {
             {c.icon} {c.name_hindi}
           </Link>
         ))}
+      </div>
+
+      <div className="flex flex-wrap gap-3 mb-8">
+        <span className="text-sm font-semibold text-text-secondary">शहर के अनुसार {cat.name_hindi}:</span>
+        {INDIA_CITIES.slice(0, 10).map((a) => {
+          const slug = a.toLowerCase().replace(/\s+/g, "-");
+          return (
+            <Link
+              key={a}
+              href={`/jobs-in/${slug}/${cat.slug}`}
+              className="text-sm px-3 py-1.5 bg-white border border-border rounded-full text-text-secondary hover:border-primary hover:text-primary transition-colors"
+            >
+              {a}
+            </Link>
+          );
+        })}
       </div>
 
       {jobs.length === 0 ? (

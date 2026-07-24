@@ -10,9 +10,12 @@ Usage:
 """
 
 import sys
+import os
 import time
 import re
 from datetime import datetime
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from scripts.utils import log
 from scripts.dedup import (

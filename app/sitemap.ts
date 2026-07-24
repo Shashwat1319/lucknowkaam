@@ -37,6 +37,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  const jobsInEntries: MetadataRoute.Sitemap = [];
+  for (const area of INDIA_CITIES) {
+    for (const cat of CATEGORIES) {
+      jobsInEntries.push({
+        url: `${siteUrl}/jobs-in/${area.toLowerCase().replace(/\s+/g, "-")}/${cat.slug}`,
+        lastModified: new Date().toISOString(),
+        changeFrequency: "daily" as const,
+        priority: 0.7,
+      });
+    }
+  }
+
   return [
     {
       url: siteUrl,
@@ -53,6 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...jobEntries,
     ...categoryEntries,
     ...locationEntries,
+    ...jobsInEntries,
     {
       url: `${siteUrl}/about`,
       lastModified: new Date().toISOString(),
