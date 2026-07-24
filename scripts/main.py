@@ -21,7 +21,7 @@ from scripts.utils import log
 from scripts.dedup import (
     load_posted_jobs, save_posted_jobs, save_slug_to_supabase, already_ran_today,
 )
-from scripts.gemini import convert_to_hindi, _gemini_calls_today, GEMINI_DAILY_LIMIT
+from scripts.gemini import convert_to_hindi, _gemini_calls_today
 from scripts.poster import post_job, build_payload
 from scripts.scrapers import (
     InternshalaScraper, ShineScraper,
@@ -106,7 +106,7 @@ def main():
     )
 
     log(f"  🔄 New after dedup: {new_after_dedup} jobs")
-    log(f"  🤖 Gemini calls: {_gemini_calls_today}/{GEMINI_DAILY_LIMIT}")
+    log(f"  🤖 Gemini calls: {_gemini_calls_today}")
 
     print(f"  {'─'*42}")
 
