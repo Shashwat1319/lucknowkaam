@@ -4,26 +4,17 @@ import os
 import time
 from typing import Optional
 
+import requests
+
 from scripts.utils import detect_category, detect_job_type, log
 
 MAX_RETRIES = 3
 INITIAL_BACKOFF = 2
-_gemini_calls_today = 0
-_GEMINI_UNAVAILABLE = False
+_groq_calls_today = 0
+_GROQ_UNAVAILABLE = False
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-
-try:
-    from google import genai as gemini_client
-    from google.genai import types
-    _NEW_GEMINI = True
-except ImportError:
-    try:
-        import google.generativeai as genai
-        _NEW_GEMINI = False
-    except ImportError:
-        gemini_client = None
-        _NEW_GEMINI = None
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 QUALIFICATION_OPTIONS = [
     "कोई विशेष योग्यता नहीं",
@@ -102,7 +93,6 @@ HINDI_TEMPLATES = {
 def _generate_salary_text(salary_raw: str) -> str:
     if not salary_raw or salary_raw == "वेतन पर बातचीत होगी":
         return "वेतन पर बातचीत होगी"
-
     import re
     nums = re.findall(r"\d[\d,]*", salary_raw.replace(",", ""))
     if len(nums) >= 2:
@@ -121,40 +111,45 @@ def _generate_salary_text(salary_raw: str) -> str:
     return "वेतन पर बातचीत होगी"
 
 
-def _call_gemini(prompt: str) -> Optional[str]:
-    global _GEMINI_UNAVAILABLE
-    if not GEMINI_API_KEY or _GEMINI_UNAVAILABLE:
+def _call_groq(prompt: str) -> Optional[str]:
+    global _GROQ_UNAVAILABLE
+    if not GROQ_API_KEY or _GROQ_UNAVAILABLE:
         return None
 
     last_err = None
     for attempt in range(MAX_RETRIES):
         try:
-            if _NEW_GEMINI:
-                client = gemini_client.Client(api_key=GEMINI_API_KEY)
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash",
-                    contents=prompt,
-                )
-                return response.text
-            else:
-                genai.configure(api_key=GEMINI_API_KEY)
-                model = genai.GenerativeModel("gemini-2.0-flash")
-                response = model.generate_content(prompt)
-                return response.text
-        except Exception as e:
-            last_err = e
-            err = str(e)
-            if "429" in err or "RESOURCE_EXHAUSTED" in err:
+            resp = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                json={
+                    "model": GROQ_MODEL,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 512,
+                    "temperature": 0.7,
+                },
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                timeout=30,
+            )
+            if resp.status_code == 200:
+                return resp.json()["choices"][0]["message"]["content"]
+            if resp.status_code == 429:
                 retry_after = INITIAL_BACKOFF * (2 ** attempt)
-                log(f"⏳ Gemini quota hit (attempt {attempt+1}/{MAX_RETRIES}), waiting {retry_after}s...")
+                log(f"⏳ Groq quota hit (attempt {attempt+1}/{MAX_RETRIES}), waiting {retry_after}s...")
                 time.sleep(retry_after)
                 continue
-            log(f"⚠️  Gemini API error: {e}")
+            log(f"⚠️  Groq API error: HTTP {resp.status_code}")
+            break
+        except Exception as e:
+            last_err = e
+            log(f"⚠️  Groq API error: {e}")
             break
 
-    if "429" in str(last_err) or "RESOURCE_EXHAUSTED" in str(last_err):
-        log(f"⛔ Gemini quota exhausted after {MAX_RETRIES} retries, disabling for this run")
-        _GEMINI_UNAVAILABLE = True
+    if last_err:
+        log(f"⛔ Groq unavailable after {MAX_RETRIES} retries, disabling for this run")
+        _GROQ_UNAVAILABLE = True
     return None
 
 
@@ -196,8 +191,8 @@ def _template_hindi_wrapper(job_data: dict) -> dict:
 
 
 def convert_to_hindi(job_data: dict) -> dict:
-    global _gemini_calls_today
-    if not GEMINI_API_KEY or _GEMINI_UNAVAILABLE:
+    global _groq_calls_today
+    if not GROQ_API_KEY or _GROQ_UNAVAILABLE:
         return _template_hindi_wrapper(job_data)
 
     prompt = f"""Neeche diye gaye job ki details ko simple Hindi mein likho jo India ke aam log samajh sakein.
@@ -219,12 +214,12 @@ Sirf JSON return karo, koi extra text nahi:
   "salary_text_hindi": "kitna paisa milega hindi mein (jaise: ₹10,000 - ₹15,000 prati mahina)"
 }}"""
 
-    text = _call_gemini(prompt)
+    text = _call_groq(prompt)
     if not text:
-        log("  → Gemini unavailable, using Hindi template")
+        log("  → Groq unavailable, using Hindi template")
         return _template_hindi_wrapper(job_data)
 
-    _gemini_calls_today += 1
+    _groq_calls_today += 1
 
     text = text.strip()
     if "```json" in text:
@@ -235,7 +230,7 @@ Sirf JSON return karo, koi extra text nahi:
     try:
         parsed = json.loads(text)
     except json.JSONDecodeError:
-        log("  → Gemini returned bad JSON, using Hindi template")
+        log("  → Groq returned bad JSON, using Hindi template")
         return _template_hindi_wrapper(job_data)
 
     parsed.setdefault("title_hindi", job_data.get("title", ""))
