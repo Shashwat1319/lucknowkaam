@@ -8,39 +8,49 @@ from scripts.utils import log
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://rswszmbzykrzidndyeed.supabase.co")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 POSTED_JOBS_FILE = os.path.join(os.path.dirname(__file__), "posted_jobs.json")
 
 
+def _supabase_headers(key: str) -> dict:
+    return {
+        "apikey": key,
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+    }
+
+
 def fetch_all_posted_slugs() -> set:
-    try:
-        resp = requests.get(
-            f"{SUPABASE_URL}/rest/v1/posted_slugs?select=slug&limit=10000",
-            headers={
-                "apikey": SUPABASE_ANON_KEY,
-                "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
-            },
-            timeout=10,
-        )
-        if resp.status_code == 200:
-            slugs = {item["slug"] for item in resp.json()}
-            log(f"📋 Loaded {len(slugs)} existing slugs from database")
-            return slugs
-    except Exception as e:
-        log(f"⚠️  Could not fetch slugs from DB: {e}")
+    for key_name, key in [("service", SUPABASE_SERVICE_KEY), ("anon", SUPABASE_ANON_KEY)]:
+        if not key:
+            continue
+        try:
+            resp = requests.get(
+                f"{SUPABASE_URL}/rest/v1/posted_slugs?select=slug&limit=10000",
+                headers=_supabase_headers(key),
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                slugs = {item["slug"] for item in resp.json()}
+                log(f"  📋 Loaded {len(slugs)} slugs from DB ({key_name} key)")
+                return slugs
+            log(f"  ⚠️  DB fetch ({key_name}): HTTP {resp.status_code}")
+        except Exception as e:
+            log(f"  ⚠️  DB fetch ({key_name}): {e}")
+
+    log("  ⚠️  Could not fetch slugs from DB — falling back to local file")
     return set()
 
 
 def save_slug_to_supabase(slug: str, source: str):
+    key = SUPABASE_SERVICE_KEY or SUPABASE_ANON_KEY
+    if not key:
+        return
     try:
         requests.post(
             f"{SUPABASE_URL}/rest/v1/posted_slugs",
             json={"slug": slug, "source": source},
-            headers={
-                "apikey": SUPABASE_ANON_KEY,
-                "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
-                "Content-Type": "application/json",
-                "Prefer": "resolution=ignore-duplicates",
-            },
+            headers=_supabase_headers(key),
             timeout=10,
         )
     except Exception:
