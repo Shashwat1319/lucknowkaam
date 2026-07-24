@@ -43,7 +43,5 @@ class FreshersworldScraper(BaseScraper):
             except Exception:
                 continue
 
-        if not jobs:
-            log(f"  ⚠ Failed: 403 Forbidden (skipped)")
         log(f"  ✓ Found: {len(jobs)} jobs")
         return jobs
