@@ -83,7 +83,7 @@ HINDI_TEMPLATES = {
     ],
     "security": [
         "🛡️ {company} में सिक्योरिटी गार्ड चाहिए। {city} लोकेशन। {salary}। {qualification}। {experience}। दिन/रात की शिफ्ट उपलब्ध। यूनिफॉर्म कंपनी देगी।",
-        "🔒 {company} को सिक्योरिटी स्टाफ चाहिए {city} में। {salary}। {qualification}। {experience}। हाइट कम से कम 5'6" चाहिए। फिजिकली फिट उम्मीदवार।",
+        '🔒 {company} को सिक्योरिटी स्टाफ चाहिए {city} में। {salary}। {qualification}। {experience}। हाइट कम से कम 5\'6" चाहिए। फिजिकली फिट उम्मीदवार।',
     ],
     "sales": [
         "💰 {company} में सेल्स / मार्केटिंग के लिए भर्ती। {city} में काम। {salary} + टार्गेट बोनस। {qualification}। {experience}। कम्युनिकेशन स्किल्स चाहिए। करियर ग्रोथ अच्छी है।",
