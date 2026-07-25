@@ -21,10 +21,10 @@ from scripts.utils import log
 from scripts.dedup import (
     load_posted_jobs, save_posted_jobs, save_slug_to_supabase, already_ran_today,
 )
-from scripts.gemini import convert_to_hindi
+from scripts.gemini import convert_to_hindi, _groq_calls_today
 from scripts.poster import post_job, build_payload
 from scripts.scrapers import (
-    InternshalaScraper, ShineScraper, IndeedScraper,
+    InternshalaScraper, ShineScraper, TimesJobsScraper, FounditScraper,
 )
 
 MAX_JOBS_PER_RUN = 30
@@ -50,7 +50,8 @@ def log_footer(posted: int, skipped: int, failed: int, elapsed: float):
 def scrape_all_sources() -> list:
     scrapers = [
         InternshalaScraper(),
-        IndeedScraper(),
+        TimesJobsScraper(),
+        FounditScraper(),
         ShineScraper(),
     ]
 
@@ -104,7 +105,7 @@ def main():
     )
 
     log(f"  🔄 New after dedup: {new_after_dedup} jobs")
-    log(f"  🤖 AI calls: {0}")
+    log(f"  🤖 Groq calls: {_groq_calls_today}")
 
     print(f"  {'─'*42}")
 

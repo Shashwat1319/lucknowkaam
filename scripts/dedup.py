@@ -57,10 +57,34 @@ def save_slug_to_supabase(slug: str, source: str):
         pass
 
 
+def fetch_jobs_slugs() -> set:
+    for key_name, key in [("service", SUPABASE_SERVICE_KEY), ("anon", SUPABASE_ANON_KEY)]:
+        if not key:
+            continue
+        try:
+            resp = requests.get(
+                f"{SUPABASE_URL}/rest/v1/jobs?select=slug&is_active=eq.true&limit=10000",
+                headers=_supabase_headers(key),
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                slugs = {item["slug"] for item in resp.json()}
+                log(f"  📋 Loaded {len(slugs)} slugs from jobs table ({key_name} key)")
+                return slugs
+        except Exception:
+            continue
+    return set()
+
+
 def load_posted_jobs() -> set:
     slugs = fetch_all_posted_slugs()
     if slugs:
         return slugs
+
+    slugs = fetch_jobs_slugs()
+    if slugs:
+        return slugs
+
     try:
         with open(POSTED_JOBS_FILE, "r") as f:
             data = json.load(f)
