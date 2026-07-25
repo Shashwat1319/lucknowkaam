@@ -24,7 +24,7 @@ from scripts.dedup import (
 from scripts.gemini import convert_to_hindi, _groq_calls_today
 from scripts.poster import post_job, build_payload
 from scripts.scrapers import (
-    InternshalaScraper, ShineScraper, TimesJobsScraper, FounditScraper,
+    InternshalaScraper, ShineScraper, TimesJobsScraper,
 )
 
 MAX_JOBS_PER_RUN = 30
@@ -50,9 +50,8 @@ def log_footer(posted: int, skipped: int, failed: int, elapsed: float):
 def scrape_all_sources() -> list:
     scrapers = [
         InternshalaScraper(),
-        TimesJobsScraper(),
-        FounditScraper(),
         ShineScraper(),
+        TimesJobsScraper(),
     ]
 
     all_jobs = []

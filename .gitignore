@@ -42,5 +42,9 @@ scripts/.env
 .env.local
 .env.local.example
 
+# python
+__pycache__/
+*.pyc
+
 # auto-generated runtime data
 /scripts/posted_jobs.json
