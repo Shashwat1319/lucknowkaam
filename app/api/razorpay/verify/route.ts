@@ -14,7 +14,7 @@ try {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, listing_id } = body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, listing_id, category } = body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !listing_id) {
       return NextResponse.json({ error: "Missing verification fields" }, { status: 400 });
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         description_hindi: listing.job_description || "",
         company_name: listing.company_name || "Unknown",
         location_area: listing.location_area || "India",
-        category: listing.category || "computer",
+        category: category || listing.category || "computer",
         contact_number: listing.contact_phone || "",
         source: "paid-listing",
         is_active: true,

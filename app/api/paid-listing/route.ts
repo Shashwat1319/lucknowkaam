@@ -25,8 +25,6 @@ export async function POST(request: Request) {
     const {
       company_name,
       contact_phone,
-      whatsapp_number,
-      your_name,
       job_title,
       job_description,
       location_area,
@@ -54,8 +52,6 @@ export async function POST(request: Request) {
         location_area,
         payment_status: "pending",
         amount: 299,
-        your_name: your_name || "",
-        whatsapp_number: whatsapp_number || contact_phone,
       })
       .select()
       .single();

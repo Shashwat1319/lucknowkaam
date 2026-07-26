@@ -59,7 +59,7 @@ export default function PostJobPage() {
           const verifyRes = await fetch("/api/razorpay/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...response, listing_id: listingId }),
+            body: JSON.stringify({ ...response, listing_id: listingId, category: formData.category }),
           });
           if (verifyRes.ok) {
             setSubmitted(true);
