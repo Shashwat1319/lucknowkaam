@@ -37,8 +37,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!/^[6-9]\d{9}$/.test(contact_phone.replace(/\s+/g, ""))) {
-      return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
+    const cleanedPhone = contact_phone.replace(/[\s\-\(\)]/g, "").replace(/^(\+?91|0)/, "");
+    if (!/^[6-9]\d{9}$/.test(cleanedPhone)) {
+      return NextResponse.json({ error: "Invalid phone number — 10 digits starting with 6-9 required" }, { status: 400 });
     }
 
     const { data: listing, error } = await supabaseAdmin
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
       .insert({
         company_name,
         contact_email: body.contact_email || "",
-        contact_phone,
+        contact_phone: cleanedPhone,
         job_title,
         job_description: job_description || "",
         location_area,
