@@ -30,10 +30,9 @@ export async function POST(request: Request) {
       job_title,
       job_description,
       location_area,
-      category,
     } = body;
 
-    if (!company_name || !contact_phone || !job_title || !location_area || !category) {
+    if (!company_name || !contact_phone || !job_title || !location_area) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -53,7 +52,6 @@ export async function POST(request: Request) {
         job_title,
         job_description: job_description || "",
         location_area,
-        category,
         payment_status: "pending",
         amount: 299,
         your_name: your_name || "",
