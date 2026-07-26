@@ -27,10 +27,9 @@ export async function POST(request: Request) {
       contact_phone,
       job_title,
       job_description,
-      location_area,
     } = body;
 
-    if (!company_name || !contact_phone || !job_title || !location_area) {
+    if (!company_name || !contact_phone || !job_title) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -46,11 +45,9 @@ export async function POST(request: Request) {
       .from("paid_listings")
       .insert({
         company_name,
-        contact_email: body.contact_email || "",
         contact_phone: cleanedPhone,
         job_title,
         job_description: job_description || "",
-        location_area,
         payment_status: "pending",
         amount: 299,
       })
