@@ -89,7 +89,7 @@ def _generate_salary_text(salary_raw: str) -> str:
     if not salary_raw or salary_raw == "वेतन पर बातचीत होगी":
         return "वेतन पर बातचीत होगी"
     import re
-    nums = re.findall(r"\d[\d,]*", salary_raw.replace(",", ""))
+    nums = re.findall(r"\d[\d,]*", salary_raw)
     if len(nums) >= 2:
         try:
             mn = int(nums[0].replace(",", ""))
@@ -130,9 +130,13 @@ def _call_groq(prompt: str) -> Optional[str]:
             )
             if resp.status_code == 200:
                 return resp.json()["choices"][0]["message"]["content"]
-            if resp.status_code == 429:
+            if resp.status_code in (401, 403):
+                log(f"⛔ Groq auth error: HTTP {resp.status_code} — disabling Groq")
+                _GROQ_UNAVAILABLE = True
+                return None
+            if resp.status_code in (429, 500, 502, 503):
                 retry_after = INITIAL_BACKOFF * (2 ** attempt)
-                log(f"⏳ Groq quota hit (attempt {attempt+1}/{MAX_RETRIES}), waiting {retry_after}s...")
+                log(f"⏳ Groq {"quota" if resp.status_code == 429 else "server"} error (attempt {attempt+1}/{MAX_RETRIES}), waiting {retry_after}s...")
                 time.sleep(retry_after)
                 continue
             log(f"⚠️  Groq API error: HTTP {resp.status_code}")
@@ -224,10 +228,13 @@ Sirf JSON return karo, koi extra text nahi:
     _groq_calls_today += 1
 
     text = text.strip()
-    if "```json" in text:
-        text = text.split("```json")[1].split("```")[0].strip()
-    elif "```" in text:
-        text = text.split("```")[1].split("```")[0].strip()
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        text = text[start:end+1]
+    else:
+        log("  → No JSON found in Groq response, using Hindi template")
+        return _template_hindi_wrapper(job_data)
 
     try:
         parsed = json.loads(text)

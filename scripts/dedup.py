@@ -20,24 +20,44 @@ def _supabase_headers(key: str) -> dict:
     }
 
 
+def _fetch_all_paginated(table: str, select: str, key: str, key_name: str) -> set:
+    if not key:
+        return set()
+    all_items = set()
+    offset = 0
+    limit = 2000
+    while True:
+        try:
+            resp = requests.get(
+                f"{SUPABASE_URL}/rest/v1/{table}?select={select}&limit={limit}&offset={offset}",
+                headers=_supabase_headers(key),
+                timeout=10,
+            )
+            if resp.status_code != 200:
+                log(f"  ⚠️  DB fetch ({key_name}): HTTP {resp.status_code}")
+                return all_items if all_items else set()
+            items = resp.json()
+            if not items:
+                break
+            for item in items:
+                all_items.add(item.get("slug", ""))
+            if len(items) < limit:
+                break
+            offset += limit
+        except Exception as e:
+            log(f"  ⚠️  DB fetch ({key_name}): {e}")
+            return all_items if all_items else set()
+    return all_items
+
+
 def fetch_all_posted_slugs() -> set:
     for key_name, key in [("service", SUPABASE_SERVICE_KEY), ("anon", SUPABASE_ANON_KEY)]:
         if not key:
             continue
-        try:
-            resp = requests.get(
-                f"{SUPABASE_URL}/rest/v1/posted_slugs?select=slug&limit=10000",
-                headers=_supabase_headers(key),
-                timeout=10,
-            )
-            if resp.status_code == 200:
-                slugs = {item["slug"] for item in resp.json()}
-                log(f"  📋 Loaded {len(slugs)} slugs from DB ({key_name} key)")
-                return slugs
-            log(f"  ⚠️  DB fetch ({key_name}): HTTP {resp.status_code}")
-        except Exception as e:
-            log(f"  ⚠️  DB fetch ({key_name}): {e}")
-
+        slugs = _fetch_all_paginated("posted_slugs", "slug", key, key_name)
+        if slugs:
+            log(f"  📋 Loaded {len(slugs)} slugs from posted_slugs ({key_name} key)")
+            return slugs
     log("  ⚠️  Could not fetch slugs from DB — falling back to local file")
     return set()
 
@@ -47,32 +67,26 @@ def save_slug_to_supabase(slug: str, source: str):
     if not key:
         return
     try:
-        requests.post(
+        resp = requests.post(
             f"{SUPABASE_URL}/rest/v1/posted_slugs",
             json={"slug": slug, "source": source},
             headers=_supabase_headers(key),
             timeout=10,
         )
-    except Exception:
-        pass
+        if resp.status_code not in (200, 201, 409):
+            log(f"  ⚠️  Failed to save slug '{slug[:40]}': HTTP {resp.status_code}")
+    except Exception as e:
+        log(f"  ⚠️  Failed to save slug '{slug[:40]}': {e}")
 
 
 def fetch_jobs_slugs() -> set:
     for key_name, key in [("service", SUPABASE_SERVICE_KEY), ("anon", SUPABASE_ANON_KEY)]:
         if not key:
             continue
-        try:
-            resp = requests.get(
-                f"{SUPABASE_URL}/rest/v1/jobs?select=slug&is_active=eq.true&limit=10000",
-                headers=_supabase_headers(key),
-                timeout=10,
-            )
-            if resp.status_code == 200:
-                slugs = {item["slug"] for item in resp.json()}
-                log(f"  📋 Loaded {len(slugs)} slugs from jobs table ({key_name} key)")
-                return slugs
-        except Exception:
-            continue
+        slugs = _fetch_all_paginated("jobs?is_active=eq.true", "slug", key, key_name)
+        if slugs:
+            log(f"  📋 Loaded {len(slugs)} slugs from jobs table ({key_name} key)")
+            return slugs
     return set()
 
 
@@ -102,13 +116,16 @@ def save_posted_jobs(posted: set):
         json.dump(data, f, indent=2)
 
 
-def already_ran_today(posted_count: int) -> bool:
+def enough_jobs_posted_today(threshold: int) -> bool:
     try:
         with open(POSTED_JOBS_FILE, "r") as f:
             data = json.load(f)
             meta = data.get("__meta__", {}) if isinstance(data, dict) else {}
-            if meta.get("last_run") == datetime.now().strftime("%Y-%m-%d") and meta.get("count", 0) >= posted_count:
+            if meta.get("last_run") == datetime.now().strftime("%Y-%m-%d") and meta.get("count", 0) >= threshold:
                 return True
     except (FileNotFoundError, json.JSONDecodeError):
         pass
     return False
+
+
+already_ran_today = enough_jobs_posted_today

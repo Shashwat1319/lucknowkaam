@@ -8,7 +8,7 @@ from scripts.utils import detect_city, detect_category, detect_job_type, generat
 
 SITE_URL = os.getenv("SITE_URL", "https://lucknowkaam.vercel.app")
 API_URL = f"{SITE_URL}/api/jobs/create"
-API_KEY = os.getenv("LUCKNOWKAAM_API_KEY", "lucknowkaam_secret_2026")
+API_KEY = os.getenv("LUCKNOWKAAM_API_KEY", "")
 REQUEST_DELAY = 1
 
 
@@ -33,13 +33,9 @@ def build_payload(scraped: dict, hindi: dict) -> dict:
     company = clean_company_name(scraped.get("company", "Unknown"))
     location = scraped.get("location", "India")
 
-    scraped["company"] = company
-
     area = detect_city(f"{title_english} {location} {hindi.get('description_hindi', '')}")
     category = detect_category(title_english, hindi.get("description_hindi", ""))
     job_type = detect_job_type(title_english, hindi.get("description_hindi", ""))
-
-    slug = generate_slug(company, title_english, area)
 
     salary_text = hindi.get("salary_text_hindi") or scraped.get("salary", "वेतन पर बातचीत")
     salary_match = re.findall(r"(\d[\d,]*)", salary_text.replace("₹", ""))
@@ -51,11 +47,13 @@ def build_payload(scraped: dict, hindi: dict) -> dict:
     elif len(salary_match) == 1:
         salary_min = int(salary_match[0].replace(",", ""))
 
+    scraped_description = scraped.get("description", "")
+    description_fallback = scraped_description if len(scraped_description) > len(title_english) else title_english
+
     return {
         "title_hindi": hindi.get("title_hindi", title_english),
         "title_english": title_english,
-        "slug": slug,
-        "description_hindi": hindi.get("description_hindi", title_english),
+        "description_hindi": hindi.get("description_hindi", description_fallback),
         "company_name": company,
         "location_area": area,
         "category": category,

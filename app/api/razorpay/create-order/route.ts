@@ -57,7 +57,8 @@ export async function POST(request: Request) {
       currency: order.currency,
       key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID,
     });
-  } catch {
+  } catch (err) {
+    console.error("create-order: error", err);
     return NextResponse.json({ error: "Order creation failed" }, { status: 500 });
   }
 }

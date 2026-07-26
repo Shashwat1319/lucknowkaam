@@ -14,6 +14,10 @@ import os
 import time
 import re
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv(".env.local")
+load_dotenv()
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -92,7 +96,9 @@ def main():
     seen = set()
     unique_jobs = []
     for j in all_jobs:
-        key = f"{j['company']}|{j['title']}".lower().strip()
+        comp = j.get("company", "Unknown")
+        titl = j.get("title", "")
+        key = f"{comp}|{titl}".lower().strip()
         key = re.sub(r"\s+", " ", key)
         if key not in seen:
             seen.add(key)
@@ -120,16 +126,17 @@ def main():
             skipped_count += 1
             continue
 
-        log(f"\n🤖 Processing: {job['title'][:60]}...")
+        log(f"\n🤖 Processing: {job.get('title', '')[:60]}...")
         hindi = convert_to_hindi(job)
         payload = build_payload(job, hindi)
         payload["slug"] = slug
 
         if dry_run:
-            print(f"  📦 [DRY RUN] Would post: {payload['title_hindi'][:50]} ({job['company']}, {job.get('location', 'India')})")
-            _record_posted(slug, job, all_posted_slugs, posted_in_session)
+            title_h = payload.get('title_hindi', '')[:50]
+            comp = job.get('company', 'Unknown')
+            loc = job.get('location', 'India')
+            print(f"  📦 [DRY RUN] Would post: {title_h} ({comp}, {loc})")
             posted_count += 1
-            save_slug_to_supabase(slug, job.get("source", "dry-run"))
             continue
 
         success = post_job(payload)
@@ -139,17 +146,21 @@ def main():
             success = post_job(payload)
 
         if success:
-            log(f"✓ Posted: {payload['title_hindi'][:50]} ({job['company']}, {job.get('location', 'India')})")
+            title_h = payload.get('title_hindi', '')[:50]
+            comp = job.get('company', 'Unknown')
+            loc = job.get('location', 'India')
+            log(f"✓ Posted: {title_h} ({comp}, {loc})")
             _record_posted(slug, job, all_posted_slugs, posted_in_session)
             posted_count += 1
             save_slug_to_supabase(slug, job.get("source", "web"))
         else:
-            log(f"✗ Failed: {job['title'][:50]}")
+            log(f"✗ Failed: {job.get('title', '')[:50]}")
             failed_count += 1
 
         time.sleep(1)
 
-    save_posted_jobs(all_posted_slugs)
+    if not dry_run:
+        save_posted_jobs(all_posted_slugs)
 
     elapsed = time.time() - start_time
     log_footer(posted_count, skipped_count, failed_count, elapsed)
@@ -157,7 +168,7 @@ def main():
 
 def _make_slug(job: dict) -> str:
     from scripts.utils import generate_slug as gs, detect_city
-    return gs(job["company"], job["title"], detect_city(job.get("location", "")))
+    return gs(job.get("company", "Unknown"), job.get("title", "Job"), detect_city(job.get("location", "")))
 
 
 def _job_slug_in_posted(job: dict, posted: set) -> bool:

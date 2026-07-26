@@ -6,12 +6,12 @@ export function middleware(request: NextRequest) {
 
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://checkout.razorpay.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://pagead2.googlesyndication.com",
     "img-src 'self' data: https:",
     "font-src 'self' https://fonts.gstatic.com",
-    "frame-src 'self' https://www.google.com",
-    "connect-src 'self' https://rswszmbzykrzidndyeed.supabase.co https://api.github.com",
+    "frame-src 'self' https://www.google.com https://api.razorpay.com https://checkout.razorpay.com",
+    "connect-src 'self' https://rswszmbzykrzidndyeed.supabase.co https://api.github.com https://api.razorpay.com https://checkout.razorpay.com",
     "form-action 'self'",
     "base-uri 'self'",
   ].join("; ");
@@ -31,5 +31,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|ads.txt|robots.txt|sitemap.xml).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|ads.txt|robots.txt|sitemap.xml).*)"],
 };

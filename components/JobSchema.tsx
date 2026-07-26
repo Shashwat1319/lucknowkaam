@@ -1,6 +1,22 @@
 import { Job } from "@/types";
 
+const CITY_STATE_MAP: Record<string, string> = {
+  "Delhi": "Delhi", "Mumbai": "Maharashtra", "Bangalore": "Karnataka",
+  "Bengaluru": "Karnataka", "Hyderabad": "Telangana", "Chennai": "Tamil Nadu",
+  "Kolkata": "West Bengal", "Pune": "Maharashtra", "Ahmedabad": "Gujarat",
+  "Lucknow": "Uttar Pradesh", "Jaipur": "Rajasthan", "Chandigarh": "Chandigarh",
+  "Indore": "Madhya Pradesh", "Bhopal": "Madhya Pradesh", "Patna": "Bihar",
+  "Nagpur": "Maharashtra", "Surat": "Gujarat", "Vadodara": "Gujarat",
+  "Noida": "Uttar Pradesh", "Gurgaon": "Haryana", "Gurugram": "Haryana",
+  "Faridabad": "Haryana", "Ghaziabad": "Uttar Pradesh", "Agra": "Uttar Pradesh",
+  "Varanasi": "Uttar Pradesh", "Kanpur": "Uttar Pradesh", "Meerut": "Uttar Pradesh",
+  "Coimbatore": "Tamil Nadu", "Kochi": "Kerala", "Visakhapatnam": "Andhra Pradesh",
+  "Mysuru": "Karnataka", "Mysore": "Karnataka",
+};
+
 export default function JobSchema({ job }: { job: Job }) {
+  const city = job.location_area || "";
+  const state = CITY_STATE_MAP[city] || "Uttar Pradesh";
   const schema = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
@@ -17,8 +33,8 @@ export default function JobSchema({ job }: { job: Job }) {
       "@type": "Place",
       address: {
         "@type": "PostalAddress",
-        addressLocality: job.location_area,
-        addressRegion: "Uttar Pradesh",
+        addressLocality: city,
+        addressRegion: state,
         addressCountry: "IN",
       },
     },

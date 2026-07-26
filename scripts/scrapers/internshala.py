@@ -10,30 +10,46 @@ class InternshalaScraper(BaseScraper):
     source_name = "Internshala"
 
     def _parse_url(self, url: str) -> tuple:
-        title, location, company = "Job", "India", "Company"
+        title, location, company = "Job", "India", "Internshala"
         try:
             seg = url.rstrip("/").split("/")[-1]
             seg = seg.split("?")[0]
-            co_part = "Company"
-            for sep in ("-job-in-", "-job-at-", "-jobs-in-"):
+
+            for sep in ("-job-in-", "-jobs-in-"):
                 if sep in seg:
                     parts = seg.split(sep, 1)
-                    title = parts[0].replace("-", " ").title()
+                    before = parts[0]
                     rest = parts[1]
                     segments = rest.split("-at-")
-                    if len(segments) >= 2:
-                        loc_part = segments[0].replace("-", " ").title()
-                        co_part = segments[1]
-                        co_part = re.sub(r'\d+.*$', '', co_part).replace("-", " ").title().strip()
-                    else:
-                        loc_part = rest.replace("-", " ").title()
-                        if "-" in loc_part:
-                            loc_part = loc_part.split("-")[0]
+                    loc_part = segments[0].replace("-", " ").title()
                     location = detect_city(loc_part) if loc_part != "Multiple Locations" else "India"
-                    company = clean_company_name(co_part)
+
+                    before_parts = before.rsplit("-", 1)
+                    if len(before_parts) > 1 and before_parts[1] in ["fresher", "internship", "part", "full"]:
+                        title = before_parts[0].replace("-", " ").title()
+                    else:
+                        title = before.replace("-", " ").title()
+
+                    if len(segments) >= 2:
+                        co_raw = segments[1]
+                        co_raw = re.sub(r'\d+.*$', '', co_raw).replace("-", " ").title().strip()
+                        if co_raw and co_raw.lower() != "multiple locations":
+                            company = clean_company_name(co_raw)
                     break
             else:
-                title = seg.replace("-", " ").title()
+                for sep in ("-at-",):
+                    if sep in seg:
+                        parts = seg.split(sep, 1)
+                        title = parts[0].replace("-", " ").title()
+                        rest = parts[1]
+                        loc_match = re.search(r'(?:-in-|$)', rest)
+                        if loc_match:
+                            co_raw = rest[:loc_match.start()].replace("-", " ").title().strip()
+                            if co_raw and co_raw.lower() != "multiple locations":
+                                company = clean_company_name(co_raw)
+                        break
+                else:
+                    title = seg.replace("-", " ").title()
         except Exception:
             pass
         return title, location, company
@@ -63,7 +79,7 @@ class InternshalaScraper(BaseScraper):
                             "title": title,
                             "company": company,
                             "location": location,
-                            "description": title,
+                            "description": f"Internshala ki {location} mein {title} ki bharti",
                             "salary": "वेतन पर बातचीत",
                             "source": "internshala",
                         })
