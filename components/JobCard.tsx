@@ -6,7 +6,7 @@ export default function JobCard({ job }: { job: Job }) {
   const slug = job.slug || `${job.title_english.toLowerCase().replace(/\s+/g, "-")}-${job.location_area.toLowerCase().replace(/\s+/g, "-")}`;
 
   return (
-    <Link href={`/jobs/${slug}`}>
+    <Link href={`/jobs/${slug}`} aria-label={`${job.title_hindi} — ${job.company_name}, ${job.location_area}`}>
       <div className="card p-5 h-full flex flex-col hover:border-primary/30 transition-all duration-200">
         <div className="flex items-start justify-between mb-3">
           <div>

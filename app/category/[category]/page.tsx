@@ -10,45 +10,61 @@ export const revalidate = 300;
 
 interface Props {
   params: { category: string };
+  searchParams: { page?: string };
 }
 
 function getCategory(catSlug: string) {
   return CATEGORIES.find((c) => c.slug === catSlug);
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params: _params1 }: Props): Promise<Metadata> {
+  const params = _params1;
   const cat = getCategory(params.category);
   const name = cat ? cat.name_hindi : params.category;
   return {
     title: `${name} की नौकरी | ${name} Jobs India | LucknowKaam`,
-    description: `पूरे भारत में ${name} की नौकरी खोजें। ${name} jobs across India।`,
+    description: `पूरे भारत में ${name} की नौकरी खोजें। ${name} jobs across India — delivery, driving, data entry, teaching, sales, security, retail, और दूसरी नौकरियां। ₹5,000 से ₹25,000 तक की सैलरी के साथ।`,
     openGraph: {
       title: `${name} की नौकरी - India`,
-      description: `पूरे भारत में ${name} की नौकरी खोजें।`,
+      description: `पूरे भारत में ${name} की नौकरी खोजें। Delivery, driving, data entry, teaching और हजारों ${name} jobs।`,
+    },
+    alternates: {
+      canonical: `https://lucknowkaam.vercel.app/category/${params.category}`,
     },
   };
 }
 
-async function getJobs(category: string): Promise<Job[]> {
+const JOBS_PER_PAGE = 30;
+
+async function getJobs(category: string, page: number): Promise<{ jobs: Job[]; total: number }> {
   try {
-    const { data } = await supabase
+    const offset = (page - 1) * JOBS_PER_PAGE;
+    const { data, count } = await supabase
       .from("jobs")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("is_active", true)
       .eq("category", category)
       .order("posted_at", { ascending: false })
-      .limit(50);
-    return (data as Job[]) || [];
+      .range(offset, offset + JOBS_PER_PAGE - 1);
+    return { jobs: (data as Job[]) || [], total: count || 0 };
   } catch {
-    return [];
+    return { jobs: [], total: 0 };
   }
 }
 
-export default async function CategoryPage({ params }: Props) {
+export default async function CategoryPage({ params, searchParams }: Props) {
   const cat = getCategory(params.category);
   if (!cat) notFound();
 
-  const jobs = await getJobs(params.category);
+  const currentPage = parseInt(searchParams.page || "1");
+  const { jobs, total } = await getJobs(params.category, currentPage);
+  const totalPages = Math.ceil(total / JOBS_PER_PAGE);
+
+  function buildPageUrl(page: number) {
+    const p = new URLSearchParams();
+    if (page > 1) p.set("page", String(page));
+    return `/category/${params.category}${p.toString() ? `?${p}` : ""}`;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -78,7 +94,7 @@ export default async function CategoryPage({ params }: Props) {
           <h1 className="text-2xl md:text-3xl font-bold text-secondary">
             {cat.name_hindi} की नौकरी
           </h1>
-          <p className="text-text-secondary">{jobs.length} नौकरियां उपलब्ध</p>
+          <p className="text-text-secondary">{total} नौकरियां उपलब्ध</p>
         </div>
       </div>
 
@@ -119,11 +135,40 @@ export default async function CategoryPage({ params }: Props) {
           <Link href="/jobs" className="btn-primary">सभी नौकरियां देखें</Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {jobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {jobs.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              {currentPage > 1 && (
+                <Link href={buildPageUrl(currentPage - 1)} className="btn-secondary text-sm px-4 py-2">
+                  ← पिछला
+                </Link>
+              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <Link
+                  key={p}
+                  href={buildPageUrl(p)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    p === currentPage
+                      ? "bg-primary text-white"
+                      : "bg-white border border-border text-text-secondary hover:border-primary"
+                  }`}
+                >
+                  {p}
+                </Link>
+              ))}
+              {currentPage < totalPages && (
+                <Link href={buildPageUrl(currentPage + 1)} className="btn-secondary text-sm px-4 py-2">
+                  अगला →
+                </Link>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

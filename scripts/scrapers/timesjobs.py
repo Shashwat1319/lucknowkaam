@@ -1,3 +1,7 @@
+import re
+
+import requests as req
+
 from .base import BaseScraper
 from scripts.utils import detect_city, clean_company_name, log
 
@@ -10,7 +14,6 @@ class TimesJobsScraper(BaseScraper):
         jobs = []
 
         try:
-            import requests as req
             resp = req.post(
                 "https://tjapi.timesjobs.com/search/api/v1/search/jobs/list",
                 json={
@@ -25,12 +28,35 @@ class TimesJobsScraper(BaseScraper):
                     "Content-Type": "application/json",
                     "Origin": "https://www.timesjobs.com",
                     "Referer": "https://www.timesjobs.com/",
+                    "Accept": "application/json",
                 },
-                timeout=15,
+                timeout=20,
             )
             if resp.status_code != 200:
                 log(f"  API returned HTTP {resp.status_code}")
-                log(f"  Found: 0 jobs")
+                resp2 = self.safe_get(
+                    "https://www.timesjobs.com/job-search/fresher-jobs-in-india",
+                    timeout=20,
+                )
+                if not resp2:
+                    log(f"  Found: 0 jobs")
+                    return jobs
+                matches = re.findall(
+                    r'<article[^>]*>.*?<a[^>]*class="[^"]*job-title[^"]*"[^>]*>(.*?)</a>.*?</article>',
+                    resp2.text, re.DOTALL
+                )
+                for m in matches[:20]:
+                    title = re.sub(r'<[^>]+>', '', m).strip()
+                    if title and len(title) >= 5:
+                        jobs.append({
+                            "title": title,
+                            "company": "",
+                            "location": "India",
+                            "description": title,
+                            "salary": "वेतन पर बातचीत",
+                            "source": "timesjobs",
+                        })
+                log(f"  Found: {len(jobs)} jobs")
                 return jobs
 
             data = resp.json()

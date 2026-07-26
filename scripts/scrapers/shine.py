@@ -63,6 +63,25 @@ class ShineScraper(BaseScraper):
 
         except Exception as e:
             log(f"  Error parsing Shine data: {e}")
+            jobs_fallback = []
+            try:
+                titles = re.findall(r'<h2[^>]*class="[^"]*jobTitle[^"]*"[^>]*>(.*?)</h2>', resp.text, re.DOTALL)
+                for t in titles[:20]:
+                    title = re.sub(r'<[^>]+>', '', t).strip()
+                    if title and len(title) >= 5:
+                        jobs_fallback.append({
+                            "title": title,
+                            "company": "",
+                            "location": "India",
+                            "description": title,
+                            "salary": "वेतन पर बातचीत",
+                            "source": "shine",
+                        })
+                if jobs_fallback:
+                    log(f"  Fallback HTML found: {len(jobs_fallback)} jobs")
+                    return jobs_fallback
+            except Exception:
+                pass
 
         log(f"  Found: {len(jobs)} jobs")
         return jobs

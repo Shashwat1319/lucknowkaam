@@ -25,9 +25,14 @@ export default function CookieConsent() {
         हम आपके अनुभव को बेहतर बनाने और वैयक्तिकृत विज्ञापन दिखाने के लिए कुकीज़ का उपयोग करते हैं।
         <a href="/privacy" className="text-primary hover:underline ml-1">और जानें</a>
       </p>
-      <button onClick={accept} className="btn-primary text-sm w-full py-2">
-        स्वीकार करें
-      </button>
+      <div className="flex gap-2">
+        <button onClick={accept} className="btn-primary text-sm flex-1 py-2">
+          स्वीकार करें
+        </button>
+        <button onClick={() => setVisible(false)} className="bg-gray-600 hover:bg-gray-700 text-white text-sm flex-1 py-2 rounded-lg font-medium transition-colors">
+          अस्वीकार करें
+        </button>
+      </div>
     </div>
   );
 }

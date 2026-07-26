@@ -3,11 +3,15 @@ import Razorpay from "razorpay";
 import { supabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/rate-limit";
 
+const JOB_LISTING_PRICE_PAISE = 29900;
+
 function getRazorpay() {
-  return new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || "",
-    key_secret: process.env.RAZORPAY_KEY_SECRET || "",
-  });
+  const key_id = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    throw new Error("Razorpay key not configured on server");
+  }
+  return new Razorpay({ key_id, key_secret });
 }
 
 export async function POST(request: Request) {
@@ -37,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     const order = await getRazorpay().orders.create({
-      amount: 29900,
+      amount: JOB_LISTING_PRICE_PAISE,
       currency: "INR",
       receipt: `listing_${listing_id}`,
       notes: {
@@ -51,11 +55,16 @@ export async function POST(request: Request) {
       .update({ razorpay_order_id: order.id })
       .eq("id", listing_id);
 
+    const pubKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    if (!pubKey) {
+      return NextResponse.json({ error: "Payment not configured" }, { status: 500 });
+    }
+
     return NextResponse.json({
       order_id: order.id,
       amount: order.amount,
       currency: order.currency,
-      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID,
+      key_id: pubKey,
     });
   } catch (err) {
     console.error("create-order: error", err);

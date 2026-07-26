@@ -10,13 +10,15 @@ export const revalidate = 300;
 
 interface Props {
   params: { area: string };
+  searchParams: { page?: string };
 }
 
 function getAreaName(areaSlug: string): string | undefined {
   return INDIA_CITIES.find((a) => a.toLowerCase().replace(/\s+/g, "-") === areaSlug);
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params: _params0 }: Props): Promise<Metadata> {
+  const params = _params0;
   const areaName = getAreaName(params.area);
   if (!areaName) return { title: "एरिया नहीं मिला" };
   return {
@@ -26,29 +28,43 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${areaName} में नौकरी`,
       description: `${areaName} में नौकरी खोजें।`,
     },
+    alternates: {
+      canonical: `https://lucknowkaam.vercel.app/location/${params.area}`,
+    },
   };
 }
 
-async function getJobs(areaName: string): Promise<Job[]> {
+const JOBS_PER_PAGE = 30;
+
+async function getJobs(areaName: string, page: number): Promise<{ jobs: Job[]; total: number }> {
   try {
-    const { data } = await supabase
+    const offset = (page - 1) * JOBS_PER_PAGE;
+    const { data, count } = await supabase
       .from("jobs")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("is_active", true)
       .eq("location_area", areaName)
       .order("posted_at", { ascending: false })
-      .limit(50);
-    return (data as Job[]) || [];
+      .range(offset, offset + JOBS_PER_PAGE - 1);
+    return { jobs: (data as Job[]) || [], total: count || 0 };
   } catch {
-    return [];
+    return { jobs: [], total: 0 };
   }
 }
 
-export default async function AreaPage({ params }: Props) {
+export default async function AreaPage({ params, searchParams }: Props) {
   const areaName = getAreaName(params.area);
   if (!areaName) notFound();
 
-  const jobs = await getJobs(areaName);
+  const currentPage = parseInt(searchParams.page || "1");
+  const { jobs, total } = await getJobs(areaName, currentPage);
+  const totalPages = Math.ceil(total / JOBS_PER_PAGE);
+
+  function buildPageUrl(page: number) {
+    const p = new URLSearchParams();
+    if (page > 1) p.set("page", String(page));
+    return `/location/${params.area}${p.toString() ? `?${p}` : ""}`;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -78,7 +94,7 @@ export default async function AreaPage({ params }: Props) {
         <h1 className="text-2xl md:text-3xl font-bold text-secondary">
           {areaName} में नौकरी
         </h1>
-        <p className="text-text-secondary">{jobs.length} नौकरियां उपलब्ध</p>
+        <p className="text-text-secondary">{total} नौकरियां उपलब्ध</p>
       </div>
 
       <AdSenseSlot slot="location-top-728x90" />
@@ -115,11 +131,40 @@ export default async function AreaPage({ params }: Props) {
           <Link href="/jobs" className="btn-primary">सभी नौकरियां देखें</Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {jobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {jobs.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              {currentPage > 1 && (
+                <Link href={buildPageUrl(currentPage - 1)} className="btn-secondary text-sm px-4 py-2">
+                  ← पिछला
+                </Link>
+              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <Link
+                  key={p}
+                  href={buildPageUrl(p)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    p === currentPage
+                      ? "bg-primary text-white"
+                      : "bg-white border border-border text-text-secondary hover:border-primary"
+                  }`}
+                >
+                  {p}
+                </Link>
+              ))}
+              {currentPage < totalPages && (
+                <Link href={buildPageUrl(currentPage + 1)} className="btn-secondary text-sm px-4 py-2">
+                  अगला →
+                </Link>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

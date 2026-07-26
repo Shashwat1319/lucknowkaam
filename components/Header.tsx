@@ -1,12 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CATEGORIES } from "@/types";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [jobDropdown, setJobDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setJobDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   return (
     <header className="bg-white shadow-sm border-b border-border sticky top-0 z-50">
@@ -20,7 +31,7 @@ export default function Header() {
             <Link href="/" className="text-text-secondary hover:text-primary transition-colors font-medium">
               होम
             </Link>
-            <div className="relative group">
+            <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setJobDropdown(!jobDropdown)}
                 className="text-text-secondary hover:text-primary transition-colors font-medium flex items-center gap-1"
@@ -31,7 +42,7 @@ export default function Header() {
                 </svg>
               </button>
               {jobDropdown && (
-                <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg border border-border py-2 w-64 z-50" onMouseLeave={() => setJobDropdown(false)}>
+                <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg border border-border py-2 w-64 z-50">
                   {CATEGORIES.map((cat) => (
                     <Link
                       key={cat.slug}

@@ -104,11 +104,11 @@ export default async function HomePage() {
               <div className="text-sm text-gray-400">आज की नौकरियां</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary">1000+</div>
+              <div className="text-3xl font-bold text-primary">{stats.totalJobs}+</div>
               <div className="text-sm text-gray-400">कंपनियां</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-success">50K+</div>
+              <div className="text-3xl font-bold text-success">{Math.max(stats.totalJobs * 50, 1000)}+</div>
               <div className="text-sm text-gray-400">नौकरी चाहने वाले</div>
             </div>
           </div>
@@ -273,8 +273,12 @@ export default async function HomePage() {
                 a: "post-job पेज पर जाएं, फॉर्म भरें और ₹299 का भुगतान करें। आपकी पोस्टिंग 30 दिनों तक सक्रिय रहेगी।" },
               { q: "क्या मैं अपने शहर की नौकरी खोज सकता हूं?",
                 a: "हां, 20+ भारतीय शहरों की नौकरियां। अपने शहर पर क्लिक करें और वहां की नौकरियां देखें।" },
+              { q: "क्या नौकरी पाने की गारंटी है?",
+                a: "नहीं, कोई गारंटी नहीं है। लेकिन हम सही नौकरी ढूंढने में मदद करते हैं।" },
               { q: "क्या नौकरी दिलाने के लिए कोई पैसे लगते हैं?",
                 a: "नहीं। नौकरी के लिए अप्लाई करना और सारी सेवाएं मुफ्त हैं। किसी को पैसे न दें।" },
+              { q: "हर दिन कितनी नई नौकरियां आती हैं?",
+                a: "रोजाना 20-50 नई नौकरियां। सुबह 6, दोपहर 12 और शाम 6 बजे अपडेट।" },
             ].map((faq, i) => (
               <details key={i} className="card p-4 group">
                 <summary className="font-semibold text-text-primary cursor-pointer list-none flex justify-between items-center">

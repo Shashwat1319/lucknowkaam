@@ -1,5 +1,6 @@
 import json
 import random
+import re
 import os
 import time
 from typing import Optional
@@ -15,6 +16,14 @@ _GROQ_UNAVAILABLE = False
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL = "llama-3.3-70b-versatile"
+
+HINDI_PERSONAL_TEMPLATES = [
+    "आप मेहनती और ईमानदार हैं। कंपनी में आपको अच्छा माहौल मिलेगा और सबसे बढ़कर, आपकी मेहनत की कदर होगी।",
+    "यह नौकरी आपके करियर की शुरुआत हो सकती है। यहां सीखने को बहुत कुछ मिलेगा।",
+    "अगर आप में कुछ नया सीखने का जुनून है तो यह जॉब आपके लिए ही है।",
+    "कंपनी का माहौल बहुत अच्छा है। सभी कर्मचारी मिल-जुलकर काम करते हैं और एक-दूसरे की मदद करते हैं। स्टाफ फ्रेंडली है।",
+    "अगर आप सच में काम करना चाहते हैं और पैसे कमाना चाहते हैं तो यह आपके लिए परफेक्ट मौका है।",
+]
 
 QUALIFICATION_OPTIONS = [
     "कोई विशेष योग्यता नहीं",
@@ -88,7 +97,6 @@ HINDI_TEMPLATES = {
 def _generate_salary_text(salary_raw: str) -> str:
     if not salary_raw or salary_raw == "वेतन पर बातचीत होगी":
         return "वेतन पर बातचीत होगी"
-    import re
     nums = re.findall(r"\d[\d,]*", salary_raw)
     if len(nums) >= 2:
         try:
@@ -194,31 +202,33 @@ def convert_to_hindi(job_data: dict) -> dict:
     if not GROQ_API_KEY or _GROQ_UNAVAILABLE:
         return _template_hindi_wrapper(job_data)
 
-    prompt = f"""Neeche diye gaye job ki details ko simple Hindi mein likho jo India ke aam log samajh sakein.
-Bilkul simple bhasha use karo, matlab ki har koi asaani se samajh le.
+    personal = random.choice(HINDI_PERSONAL_TEMPLATES)
+
+    prompt = f"""Neeche diye gaye job details ko aisi simple Hindi mein likho jaise koi dost naukri ke baare mein bata raha ho. Bilkul natural aur relatable language use karo. Ghatiya translation jaisa na lage.
 
 Job Data:
 Title: {job_data.get('title', '')}
 Company: {job_data.get('company', '')}
 Location: {job_data.get('location', '')}
-Description: {job_data.get('description', '')}
+Description English: {job_data.get('description', '')}
 Salary: {job_data.get('salary', '')}
 
-description_hindi at least 100-150 words mein likho jisme ye sab ho:
-- Kaam kya karna hoga iska vistrit vivaran (detailed description of work)
-- Kaam ke ghante aur timings
-- Kya suvidhayein milengi (PF, ESIC, bonus, insurance)
-- Company ka mahaul kaisa hai
-- Kaise apply karein
+description_hindi exactly 120-180 words mein likho jisme ye sab ho:
+- Yeh job kiske liye suitable hai
+- Kaam kya karna hoga (steps, daily routine, type of work)
+- Kaam ke ghante, shifts, week off
+- Salary kitni milegi, kya additional benefits hain (PF, bonus, insurance)
+- Kaise apply karein (call, WhatsApp, walk-in)
+- Ek personal touch do: {personal}
 
 Sirf JSON return karo, koi extra text nahi:
 {{
-  "title_hindi": "naukari ka naam hindi mein (20 words)",
-  "description_hindi": "100 se 150 words mein kaam ke baare mein vistrit jankari, bilkul simple hindi mein",
-  "qualification": "kya padhai chahiye (jaise: 10vi pass, 12vi pass, graduate)",
-  "experience": "kitna anubhav chahiye (jaise: koi anubhav nahi, 1 saal, 2 saal)",
+  "title_hindi": "15-20 words mein aakarshak job title Hindi mein. Jaise: 🔥 {company_name} mein {title_name} chahiye, {loc_name} — urgent hiring",
+  "description_hindi": "120-180 words mein simple Hindi, aise jaise koi apna dost bata raha ho",
+  "qualification": "kya qualification chahiye (jaise: 10vi pass, 12vi pass, graduate, koi degree nahi)",
+  "experience": "kitna anubhav chahiye (jaise: koi anubhav nahi, 0-1 saal, 1-2 saal)",
   "salary_text_hindi": "kitna paisa milega hindi mein (jaise: ₹10,000 - ₹15,000 prati mahina)"
-}}"""
+}}""".format(company_name=job_data.get('company', ''), title_name=job_data.get('title', ''), loc_name=job_data.get('location', ''))
 
     text = _call_groq(prompt)
     if not text:

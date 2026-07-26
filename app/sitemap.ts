@@ -37,15 +37,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  const existingCombos: Set<string> = new Set();
+  try {
+    const { data } = await supabase
+      .from("jobs")
+      .select("location_area, category")
+      .eq("is_active", true);
+    if (data) {
+      for (const row of data) {
+        const areaSlug = (row.location_area || "").toLowerCase().replace(/\s+/g, "-");
+        if (areaSlug && row.category) {
+          existingCombos.add(`${areaSlug}/${row.category}`);
+        }
+      }
+    }
+  } catch {}
+
   const jobsInEntries: MetadataRoute.Sitemap = [];
   for (const area of INDIA_CITIES) {
+    const areaSlug = area.toLowerCase().replace(/\s+/g, "-");
     for (const cat of CATEGORIES) {
-      jobsInEntries.push({
-        url: `${siteUrl}/jobs-in/${area.toLowerCase().replace(/\s+/g, "-")}/${cat.slug}`,
-        lastModified: new Date().toISOString(),
-        changeFrequency: "daily" as const,
-        priority: 0.7,
-      });
+      if (existingCombos.has(`${areaSlug}/${cat.slug}`)) {
+        jobsInEntries.push({
+          url: `${siteUrl}/jobs-in/${areaSlug}/${cat.slug}`,
+          lastModified: new Date().toISOString(),
+          changeFrequency: "daily" as const,
+          priority: 0.7,
+        });
+      }
     }
   }
 
@@ -70,31 +89,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${siteUrl}/about`,
       lastModified: new Date().toISOString(),
       changeFrequency: "monthly",
-      priority: 0.4,
+      priority: 0.5,
     },
     {
       url: `${siteUrl}/contact`,
       lastModified: new Date().toISOString(),
       changeFrequency: "monthly",
-      priority: 0.3,
+      priority: 0.5,
     },
     {
       url: `${siteUrl}/post-job`,
       lastModified: new Date().toISOString(),
-      changeFrequency: "monthly",
-      priority: 0.5,
+      changeFrequency: "weekly",
+      priority: 0.6,
     },
     {
       url: `${siteUrl}/privacy`,
       lastModified: new Date().toISOString(),
       changeFrequency: "monthly",
-      priority: 0.3,
+      priority: 0.4,
     },
     {
       url: `${siteUrl}/terms`,
       lastModified: new Date().toISOString(),
       changeFrequency: "monthly",
-      priority: 0.3,
+      priority: 0.4,
     },
   ];
 }

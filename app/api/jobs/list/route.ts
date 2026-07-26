@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
+  const { allowed } = checkRateLimit(ip);
+  if (!allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
   const location = searchParams.get("location");

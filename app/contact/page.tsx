@@ -14,12 +14,23 @@ export default function ContactPage() {
     const form = e.currentTarget;
     const data = new FormData(form);
 
-    const mailto = `mailto:contact@lucknowkaam.com?subject=संपर्क: ${data.get("name")}&body=नाम: ${data.get("name")}%0Aईमेल: ${data.get("email")}%0A%0A${data.get("message")}`;
-
     try {
-      window.open(mailto, "_blank");
-      setSubmitted(true);
-      form.reset();
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.get("name"),
+          email: data.get("email"),
+          message: data.get("message"),
+        }),
+      });
+
+      if (res.ok) {
+        setSubmitted(true);
+        form.reset();
+      } else {
+        setError(true);
+      }
     } catch {
       setError(true);
     }
@@ -49,13 +60,6 @@ export default function ContactPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-2xl" aria-hidden="true">📞</span>
-              <div>
-                <p className="text-sm text-text-secondary">फोन / WhatsApp</p>
-                <p className="font-semibold">+91 9999999999</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
               <span className="text-2xl" aria-hidden="true">📍</span>
               <div>
                 <p className="text-sm text-text-secondary">पता</p>
@@ -69,7 +73,7 @@ export default function ContactPage() {
           <h2 className="text-xl font-bold text-text-primary mb-4">हमें संदेश भेजें</h2>
           {submitted ? (
             <div className="text-center py-8" role="alert">
-              <p className="text-success text-lg font-semibold mb-2">✓ आपका संदेश भेज दिया गया है!</p>
+              <p className="text-success text-lg font-semibold mb-2">आपका संदेश भेज दिया गया है!</p>
               <p className="text-text-secondary">हम जल्द ही आपसे संपर्क करेंगे।</p>
               <button onClick={() => setSubmitted(false)} className="btn-primary mt-4">नया संदेश</button>
             </div>

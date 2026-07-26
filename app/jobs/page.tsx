@@ -14,6 +14,9 @@ export const metadata: Metadata = {
     title: "भारत में सभी नौकरियां | LucknowKaam",
     description: "पूरे भारत में उपलब्ध सभी नौकरियां देखें।",
   },
+  alternates: {
+    canonical: "https://lucknowkaam.vercel.app/jobs",
+  },
 };
 
 const JOBS_PER_PAGE = 20;
@@ -34,7 +37,7 @@ async function getJobs(params: Props["searchParams"]): Promise<{ jobs: Job[]; to
       .order("posted_at", { ascending: false });
 
     if (params.q) {
-      query = query.ilike("title_hindi", `%${params.q}%`);
+      query = query.or(`title_hindi.ilike.%${params.q}%,company_name.ilike.%${params.q}%,description_hindi.ilike.%${params.q}%`);
     }
     if (params.area) {
       query = query.eq("location_area", params.area);

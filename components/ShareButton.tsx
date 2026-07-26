@@ -36,10 +36,10 @@ export default function ShareButton({ title, company, location, salary, slug }: 
         Facebook
       </button>
       <button
-        onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`)}
+        onClick={() => window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`)}
         className="bg-black text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
       >
-        Twitter / X
+        X (Twitter)
       </button>
       <button
         onClick={copyLink}

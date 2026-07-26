@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
-import { validatePaymentVerification } from "razorpay/dist/utils/razorpay-utils";
 import { supabaseAdmin } from "@/lib/supabase";
+
+let validatePaymentVerification: ((params: { order_id: string; payment_id: string }, signature: string, secret: string) => boolean) | null = null;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const mod = require("razorpay/dist/utils/razorpay-utils");
+  validatePaymentVerification = mod.validatePaymentVerification;
+} catch {
+  console.error("verify: razorpay-utils import failed");
+}
 
 export async function POST(request: Request) {
   try {
@@ -11,10 +20,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing verification fields" }, { status: 400 });
     }
 
+    if (!validatePaymentVerification) {
+      return NextResponse.json({ error: "Verification not available" }, { status: 500 });
+    }
+
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret) {
+      return NextResponse.json({ error: "Payment not configured" }, { status: 500 });
+    }
+
     const isValid = validatePaymentVerification(
       { order_id: razorpay_order_id, payment_id: razorpay_payment_id },
       razorpay_signature,
-      process.env.RAZORPAY_KEY_SECRET || ""
+      secret
     );
 
     if (!isValid) {

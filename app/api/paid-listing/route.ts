@@ -25,6 +25,8 @@ export async function POST(request: Request) {
     const {
       company_name,
       contact_phone,
+      whatsapp_number,
+      your_name,
       job_title,
       job_description,
       location_area,
@@ -36,6 +38,10 @@ export async function POST(request: Request) {
         { error: "Missing required fields" },
         { status: 400 }
       );
+    }
+
+    if (!/^[6-9]\d{9}$/.test(contact_phone.replace(/\s+/g, ""))) {
+      return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
     }
 
     const { data: listing, error } = await supabaseAdmin
@@ -50,6 +56,8 @@ export async function POST(request: Request) {
         category,
         payment_status: "pending",
         amount: 299,
+        your_name: your_name || "",
+        whatsapp_number: whatsapp_number || contact_phone,
       })
       .select()
       .single();

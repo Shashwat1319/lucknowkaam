@@ -76,10 +76,6 @@ export function getJobTypeHindi(type: string): string {
   return map[type] || type;
 }
 
-export function getAreaHindi(area: string): string {
-  return area;
-}
-
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + "...";
