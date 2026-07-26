@@ -151,18 +151,40 @@ export default async function JobDetailPage({ params }: Props) {
               </div>
 
               {job.qualification && (
-                <div className="mb-4">
+                <div className="mb-4 p-4 bg-blue-50 rounded-lg">
                   <h3 className="font-bold text-text-primary mb-2">योग्यता</h3>
                   <p className="text-text-secondary">{job.qualification}</p>
                 </div>
               )}
 
               {job.experience && (
-                <div className="mb-6">
+                <div className="mb-6 p-4 bg-green-50 rounded-lg">
                   <h3 className="font-bold text-text-primary mb-2">अनुभव</h3>
                   <p className="text-text-secondary">{job.experience}</p>
                 </div>
               )}
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-5 mb-6">
+                <h3 className="font-bold text-text-primary mb-3">नौकरी के लिए जरूरी स्किल्स</h3>
+                <ul className="space-y-2 text-text-secondary">
+                  <li>• मेहनती और ईमानदार — कंपनी को ऐसे ही लोग चाहिए</li>
+                  <li>• समय पर काम करने की आदत — टाइम पर आना और काम पूरा करना</li>
+                  <li>• टीम के साथ मिलकर काम करना — सबको साथ लेकर चलना</li>
+                  <li>• सीखने की इच्छा — नई चीजें सीखने को तैयार रहना</li>
+                  <li>• जिम्मेदारी लेना — अपने काम की जिम्मेदारी खुद लेना</li>
+                </ul>
+              </div>
+
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-5 mb-6">
+                <h3 className="font-bold text-text-primary mb-3">कंपनी की तरफ से मिलने वाली सुविधाएं</h3>
+                <ul className="space-y-2 text-text-secondary">
+                  <li>• समय पर सैलरी — हर महीने की तय तारीख पर वेतन मिलेगा</li>
+                  <li>• सुरक्षित काम का माहौल — पुरुष और महिला दोनों के लिए सुरक्षित</li>
+                  <li>• छुट्टियां — हफ्ते में एक दिन की छुट्टी और सरकारी छुट्टियां</li>
+                  <li>• करियर ग्रोथ — अच्छा काम करने पर प्रमोशन और सैलरी बढ़ोतरी</li>
+                  <li>• प्रशिक्षण — काम सिखाने के लिए फ्री ट्रेनिंग दी जाएगी</li>
+                </ul>
+              </div>
 
               <div className="border-t border-border pt-6 mt-6">
                 <h3 className="text-xl font-bold text-text-primary mb-4">कैसे अप्लाई करें?</h3>
@@ -186,6 +208,18 @@ export default async function JobDetailPage({ params }: Props) {
                     </a>
                   )}
                 </div>
+              </div>
+
+              <div className="border-t border-border pt-6 mt-6 bg-gray-50 -mx-6 md:-mx-8 px-6 md:px-8 pb-6 -mb-6 md:-mb-8 rounded-b-xl">
+                <h3 className="text-lg font-bold text-text-primary mb-3">इंटरव्यू की तैयारी कैसे करें</h3>
+                <div className="space-y-2 text-sm text-text-secondary">
+                  <p><strong>1. कंपनी के बारे में जानें:</strong> जिस कंपनी में अप्लाई कर रहे हैं उसके बारे में थोड़ी जानकारी पहले से ले लें। उनका काम क्या है, क्या प्रोडक्ट है — यह जानना अच्छा रहता है।</p>
+                  <p><strong>2. अपने दस्तावेज तैयार रखें:</strong> आधार कार्ड, शैक्षणिक प्रमाणपत्र, अनुभव प्रमाणपत्र (अगर हो तो) और पासपोर्ट साइज फोटो साथ ले जाएं।</p>
+                  <p><strong>3. समय पर पहुंचें:</strong> इंटरव्यू के समय से कम से कम 15 मिनट पहले पहुंचने की कोशिश करें। इससे आपका कॉन्फिडेंस अच्छा रहेगा।</p>
+                  <p><strong>4. साफ-सुथरे कपड़े पहनें:</strong> साफ और इस्त्री किए हुए कपड़े पहनकर जाएं। बहुत फॉर्मल होने की जरूरत नहीं, लेकिन साफ-सुथरा दिखना जरूरी है।</p>
+                  <p><strong>5. आत्मविश्वास से बात करें:</strong> घबराएं नहीं। सीधे और साफ बात करें। अगर कोई जवाब नहीं पता तो ईमानदारी से कहें कि मुझे नहीं पता लेकिन मैं सीखने को तैयार हूं।</p>
+                </div>
+                <p className="text-xs text-text-secondary mt-4">⚠️ सावधानी: नौकरी दिलाने के नाम पर कोई भी पैसे न दें। LucknowKaam कभी भी किसी से पैसे नहीं लेता है।</p>
               </div>
             </div>
 

@@ -203,6 +203,91 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-4xl mx-auto px-4">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": [
+                  {
+                    "@type": "Question",
+                    "name": "क्या LucknowKaam पर नौकरी खोजना मुफ्त है?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "हां, LucknowKaam पर नौकरी खोजना और अप्लाई करना बिल्कुल मुफ्त है। हम नौकरी चाहने वालों से कभी कोई शुल्क नहीं लेते हैं। आप बिना किसी पैसे के हजारों नौकरियां देख सकते हैं और सीधे अप्लाई कर सकते हैं।"
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "मैं अपनी नौकरी कैसे पोस्ट कर सकता हूं?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "अपनी नौकरी पोस्ट करने के लिए सिर्फ ₹299 का भुगतान करना होता है। post-job पेज पर जाकर नौकरी का विवरण भरें और Razorpay के जरिए भुगतान करें। आपकी पोस्टिंग 30 दिनों तक वेबसाइट पर दिखाई देगी।"
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "क्या मैं अपने शहर की नौकरी खोज सकता हूं?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "हां, आप अपने शहर के नाम पर क्लिक करके वहां की नौकरियां देख सकते हैं। हम दिल्ली, मुंबई, लखनऊ, बैंगलोर, चेन्नई, कोलकाता, पुणे, हैदराबाद, अहमदाबाद, जयपुर, सूरत और 20+ शहरों की नौकरियां दिखाते हैं।"
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "क्या नौकरी पाने की गारंटी है?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "LucknowKaam एक प्लेटफॉर्म है जो नौकरी खोजने वालों और नियोक्ताओं को जोड़ता है। हम नौकरी पाने की गारंटी नहीं देते, लेकिन हम आपको सही जगह पर सही नौकरी ढूंढने में मदद करते हैं। इंटरव्यू की तैयारी अच्छे से करें और आत्मविश्वास से जाएं।"
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "क्या नौकरी के लिए अप्लाई करने पर कोई पैसे लगते हैं?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "बिल्कुल नहीं। नौकरी के लिए अप्लाई करना पूरी तरह से मुफ्त है। सावधान रहें, अगर कोई नौकरी दिलाने के नाम पर पैसे मांगता है तो वह फर्जी हो सकता है। LucknowKaam कभी भी नौकरी दिलाने के लिए पैसे नहीं लेता।"
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "हर दिन कितनी नई नौकरियां आती हैं?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "हम रोजाना 20-50 नई नौकरियां पोस्ट करते हैं। ये नौकरियां अलग-अलग श्रेणियों और शहरों से होती हैं। सुबह 6 बजे, दोपहर 12 बजे और शाम 6 बजे नई नौकरियां अपडेट की जाती हैं।"
+                    }
+                  }
+                ]
+              }),
+            }}
+          />
+          <h2 className="section-title">अक्सर पूछे जाने वाले सवाल</h2>
+          <div className="space-y-4">
+            {[
+              { q: "क्या LucknowKaam पर नौकरी खोजना मुफ्त है?",
+                a: "हां, बिल्कुल मुफ्त। हम नौकरी चाहने वालों से कभी कोई शुल्क नहीं लेते।" },
+              { q: "मैं अपनी नौकरी कैसे पोस्ट कर सकता हूं?",
+                a: "post-job पेज पर जाएं, फॉर्म भरें और ₹299 का भुगतान करें। आपकी पोस्टिंग 30 दिनों तक सक्रिय रहेगी।" },
+              { q: "क्या मैं अपने शहर की नौकरी खोज सकता हूं?",
+                a: "हां, 20+ भारतीय शहरों की नौकरियां। अपने शहर पर क्लिक करें और वहां की नौकरियां देखें।" },
+              { q: "क्या नौकरी दिलाने के लिए कोई पैसे लगते हैं?",
+                a: "नहीं। नौकरी के लिए अप्लाई करना और सारी सेवाएं मुफ्त हैं। किसी को पैसे न दें।" },
+            ].map((faq, i) => (
+              <details key={i} className="card p-4 group">
+                <summary className="font-semibold text-text-primary cursor-pointer list-none flex justify-between items-center">
+                  {faq.q}
+                  <span className="text-primary text-xl group-open:rotate-180 transition-transform">›</span>
+                </summary>
+                <p className="mt-3 text-text-secondary">{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-gradient-to-r from-primary to-orange-600 text-white py-16">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-3">क्या आप नौकरी देना चाहते हैं?</h2>
