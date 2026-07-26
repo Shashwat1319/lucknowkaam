@@ -79,8 +79,10 @@ export default function PostJobPage() {
 
       const rzp = new window.Razorpay(options);
       rzp.open();
-    } catch {
-      setError("पेमेंट प्रोसेसिंग में समस्या हुई। कृपया पुनः प्रयास करें।");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "पेमेंट प्रोसेसिंग में समस्या हुई";
+      console.error("Razorpay error:", e);
+      setError(msg);
       setLoading(false);
     }
   };
