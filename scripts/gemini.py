@@ -144,7 +144,8 @@ def _call_groq(prompt: str) -> Optional[str]:
                 return None
             if resp.status_code in (429, 500, 502, 503):
                 retry_after = INITIAL_BACKOFF * (2 ** attempt)
-                log(f"⏳ Groq {"quota" if resp.status_code == 429 else "server"} error (attempt {attempt+1}/{MAX_RETRIES}), waiting {retry_after}s...")
+                kind = "quota" if resp.status_code == 429 else "server"
+                log(f"⏳ Groq {kind} error (attempt {attempt+1}/{MAX_RETRIES}), waiting {retry_after}s...")
                 time.sleep(retry_after)
                 continue
             log(f"⚠️  Groq API error: HTTP {resp.status_code}")
