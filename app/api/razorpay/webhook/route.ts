@@ -21,51 +21,49 @@ export async function POST(request: Request) {
     if (event.event === "payment.captured") {
       const payment = event.payload.payment.entity;
       const orderId = payment.order_id;
-      const paymentId = payment.id;
 
-      const { data: listing } = await supabaseAdmin
-        .from("paid_listings")
-        .select("*")
-        .eq("razorpay_order_id", orderId)
-        .single();
-
-      if (listing && listing.payment_status !== "paid") {
-        await supabaseAdmin
+      try {
+        const { data: listing } = await supabaseAdmin
           .from("paid_listings")
-          .update({
-            payment_status: "paid",
-            razorpay_payment_id: paymentId,
-            razorpay_order_id: orderId,
-          })
-          .eq("id", listing.id);
+          .select("*")
+          .eq("razorpay_order_id", orderId)
+          .single();
 
-        const { data: existing } = await supabaseAdmin
-          .from("jobs")
-          .select("id")
-          .eq("company_name", listing.company_name)
-          .eq("title_hindi", listing.job_title)
-          .eq("location_area", listing.location_area)
-          .maybeSingle();
-
-        if (!existing) {
+        if (listing && listing.payment_status !== "paid") {
           await supabaseAdmin
+            .from("paid_listings")
+            .update({ payment_status: "paid" })
+            .eq("id", listing.id);
+
+          const { data: existing } = await supabaseAdmin
             .from("jobs")
-            .insert({
-              title_hindi: listing.job_title,
-              title_english: listing.job_title,
-              slug: `${listing.job_title?.toLowerCase().replace(/\s+/g, "-") || "job"}-${listing.location_area?.toLowerCase().replace(/\s+/g, "-") || "india"}-${Date.now()}`,
-              description_hindi: listing.job_description || "",
-              company_name: listing.company_name || "Unknown",
-              location_area: listing.location_area || "India",
-              category: listing.category || "computer",
-              contact_number: listing.contact_phone || "",
-              source: "paid-listing",
-              is_active: true,
-              posted_at: new Date().toISOString(),
-              expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-              views: 0,
-            });
+            .select("id")
+            .eq("company_name", listing.company_name)
+            .eq("title_hindi", listing.job_title)
+            .maybeSingle();
+
+          if (!existing) {
+            await supabaseAdmin
+              .from("jobs")
+              .insert({
+                title_hindi: listing.job_title,
+                title_english: listing.job_title,
+                slug: `${listing.job_title?.toLowerCase().replace(/\s+/g, "-") || "job"}-${listing.location_area?.toLowerCase().replace(/\s+/g, "-") || "india"}-${Date.now()}`,
+                description_hindi: listing.job_description || "",
+                company_name: listing.company_name || "Unknown",
+                location_area: listing.location_area || "India",
+                category: listing.category || "computer",
+                contact_number: listing.contact_phone || "",
+                source: "paid-listing",
+                is_active: true,
+                posted_at: new Date().toISOString(),
+                expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                views: 0,
+              });
+          }
         }
+      } catch (e) {
+        console.warn("webhook: paid_listings lookup failed (columns may not exist)", e);
       }
     }
 

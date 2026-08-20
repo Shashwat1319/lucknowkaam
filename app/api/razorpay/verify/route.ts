@@ -52,11 +52,7 @@ export async function POST(request: Request) {
 
     const { error: updateError } = await supabaseAdmin
       .from("paid_listings")
-      .update({
-        payment_status: "paid",
-        razorpay_payment_id,
-        razorpay_order_id,
-      })
+      .update({ payment_status: "paid" })
       .eq("id", listing_id);
 
     if (updateError) {
@@ -64,16 +60,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
+    const city = body.city || listing.city || "India";
+    const jobCategory = category || "computer";
+
     const { error: insertError } = await supabaseAdmin
       .from("jobs")
       .insert({
         title_hindi: listing.job_title,
         title_english: listing.job_title,
-        slug: `${listing.job_title?.toLowerCase().replace(/\s+/g, "-") || "job"}-${listing.location_area?.toLowerCase().replace(/\s+/g, "-") || "india"}-${Date.now()}`,
+        slug: `${listing.job_title?.toLowerCase().replace(/\s+/g, "-") || "job"}-${city.toLowerCase().replace(/\s+/g, "-") || "india"}-${Date.now()}`,
         description_hindi: listing.job_description || "",
         company_name: listing.company_name || "Unknown",
-        location_area: listing.location_area || "India",
-        category: category || listing.category || "computer",
+        location_area: city,
+        category: jobCategory,
         contact_number: listing.contact_phone || "",
         source: "paid-listing",
         is_active: true,
