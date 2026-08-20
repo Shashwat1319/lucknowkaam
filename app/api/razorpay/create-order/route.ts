@@ -50,10 +50,14 @@ export async function POST(request: Request) {
       },
     });
 
-    await supabaseAdmin
-      .from("paid_listings")
-      .update({ razorpay_order_id: order.id })
-      .eq("id", listing_id);
+    try {
+      await supabaseAdmin
+        .from("paid_listings")
+        .update({ razorpay_order_id: order.id })
+        .eq("id", listing_id);
+    } catch {
+      console.warn("create-order: could not store razorpay_order_id (column may not exist)");
+    }
 
     const pubKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
     if (!pubKey) {
