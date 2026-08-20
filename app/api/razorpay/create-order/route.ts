@@ -68,6 +68,10 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     console.error("create-order: error", err);
-    return NextResponse.json({ error: "Order creation failed" }, { status: 500 });
+    const msg =
+      err instanceof Error && err.message === "Razorpay key not configured on server"
+        ? "Payment not configured: RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET missing on server"
+        : "Order creation failed";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
