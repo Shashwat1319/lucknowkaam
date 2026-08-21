@@ -27,7 +27,7 @@ interface Props {
 
 async function getJobs(params: Props["searchParams"]): Promise<{ jobs: Job[]; total: number }> {
   try {
-    const page = parseInt(params.page || "1");
+    const page = Math.max(parseInt(params.page || "1"), 1);
     const offset = (page - 1) * JOBS_PER_PAGE;
 
     let query = supabase
@@ -38,7 +38,8 @@ async function getJobs(params: Props["searchParams"]): Promise<{ jobs: Job[]; to
       .order("posted_at", { ascending: false });
 
     if (params.q) {
-      query = query.or(`title_hindi.ilike.%${params.q}%,company_name.ilike.%${params.q}%,description_hindi.ilike.%${params.q}%`);
+      const q = params.q.replace(/,/g, " ");
+      query = query.or(`title_hindi.ilike.%${q}%,company_name.ilike.%${q}%,description_hindi.ilike.%${q}%`);
     }
     if (params.area) {
       query = query.eq("location_area", params.area);

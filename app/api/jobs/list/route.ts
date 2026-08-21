@@ -12,9 +12,10 @@ export async function GET(request: Request) {
   const category = searchParams.get("category");
   const location = searchParams.get("location");
   const type = searchParams.get("type");
-  const page = parseInt(searchParams.get("page") || "1");
+  const rawPage = parseInt(searchParams.get("page") || "1");
+  const page = Math.max(isNaN(rawPage) ? 1 : rawPage, 1);
   const rawLimit = parseInt(searchParams.get("limit") || "20");
-  const limit = Math.min(Math.max(rawLimit, 1), 50);
+  const limit = Math.min(Math.max(isNaN(rawLimit) ? 20 : rawLimit, 1), 50);
   const offset = (page - 1) * limit;
 
   let query = supabase
