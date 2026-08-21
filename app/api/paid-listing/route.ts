@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/rate-limit";
-
-const MAX_PAYLOAD_SIZE = 50 * 1024;
+import { validateJsonRequest } from "@/lib/validate-request";
 
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for") || "unknown";
@@ -14,11 +13,10 @@ export async function POST(request: Request) {
     );
   }
 
+  const validation = validateJsonRequest(request);
+  if (!validation.ok) return validation.response;
+
   try {
-    const contentLength = parseInt(request.headers.get("content-length") || "0");
-    if (contentLength > MAX_PAYLOAD_SIZE) {
-      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
-    }
 
     const body = await request.json();
 

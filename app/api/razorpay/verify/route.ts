@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { supabaseAdmin } from "@/lib/supabase";
+import { validateJsonRequest } from "@/lib/validate-request";
 
 const JOB_LISTING_PRICE_PAISE = 29900;
 
@@ -24,6 +25,9 @@ function getRazorpay() {
 }
 
 export async function POST(request: Request) {
+  const validation = validateJsonRequest(request);
+  if (!validation.ok) return validation.response;
+
   try {
     const body = await request.json();
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, listing_id } = body;

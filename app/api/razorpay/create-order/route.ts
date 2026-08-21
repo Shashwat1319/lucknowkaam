@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { supabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { validateJsonRequest } from "@/lib/validate-request";
 
 const JOB_LISTING_PRICE_PAISE = 29900;
 
@@ -20,6 +21,9 @@ export async function POST(request: Request) {
   if (!allowed) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
+
+  const validation = validateJsonRequest(request);
+  if (!validation.ok) return validation.response;
 
   try {
     const { listing_id } = await request.json();
