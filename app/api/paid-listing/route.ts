@@ -41,6 +41,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!location_area || !category) {
+      return NextResponse.json(
+        { error: "City and category are required" },
+        { status: 400 }
+      );
+    }
+
     const cleanedPhone = contact_phone.replace(/[\s\-\(\)]/g, "").replace(/^(\+?91|0)/, "");
     if (!/^[6-9]\d{9}$/.test(cleanedPhone)) {
       return NextResponse.json({ error: "Invalid phone number — 10 digits starting with 6-9 required" }, { status: 400 });

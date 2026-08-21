@@ -40,9 +40,16 @@ async function getJobStats() {
       .eq("is_active", true)
       .gte("posted_at", todayStr);
 
-    return { totalJobs: totalJobs || 0, todayJobs: todayJobs || 0 };
+    const { data: companies } = await supabase
+      .from("jobs")
+      .select("company_name")
+      .eq("is_active", true);
+
+    const uniqueCompanies = new Set((companies || []).map((c: { company_name: string }) => c.company_name)).size;
+
+    return { totalJobs: totalJobs || 0, todayJobs: todayJobs || 0, totalCompanies: uniqueCompanies };
   } catch {
-    return { totalJobs: 0, todayJobs: 0 };
+    return { totalJobs: 0, todayJobs: 0, totalCompanies: 0 };
   }
 }
 
@@ -95,7 +102,7 @@ export default async function HomePage() {
 
           <SearchBar />
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-10 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mt-10 max-w-3xl mx-auto">
             <div className="text-center">
               <div className="text-3xl font-bold text-primary">{stats.totalJobs}+</div>
               <div className="text-sm text-gray-400">कुल नौकरियां</div>
@@ -105,12 +112,8 @@ export default async function HomePage() {
               <div className="text-sm text-gray-400">आज की नौकरियां</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary">{stats.totalJobs}+</div>
+              <div className="text-3xl font-bold text-primary">{stats.totalCompanies}+</div>
               <div className="text-sm text-gray-400">कंपनियां</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-success">{Math.max(stats.totalJobs * 50, 1000)}+</div>
-              <div className="text-sm text-gray-400">नौकरी चाहने वाले</div>
             </div>
           </div>
         </div>
@@ -165,42 +168,22 @@ export default async function HomePage() {
 
       <section className="bg-white py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="section-title">हजारों लोगों ने पाई नौकरी</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h2 className="section-title">कैसे काम करता है?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { name: "राजेश कुमार", text: "डिलीवरी बॉय की नौकरी मिली, बहुत अच्छा प्लेटफॉर्म है", area: "लखनऊ" },
-              { name: "सुनीता देवी", text: "डेटा एंट्री का काम मिला, घर से काम करती हूं", area: "दिल्ली" },
-              { name: "अमित शर्मा", text: "दुकान का काम चाहिए था, 2 दिन में मिल गया", area: "मुंबई" },
-            ].map((t, i) => (
-              <div key={i} className="card p-6 text-center">
-                <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">🙂</span>
+              { step: "1", title: "नौकरी खोजें", desc: "अपनी पसंद की नौकरी खोजें और फिल्टर करें" },
+              { step: "2", title: "अप्लाई करें", desc: "एक क्लिक में अप्लाई करें या कॉल करें" },
+              { step: "3", title: "नौकरी पाएं", desc: "इंटरव्यू दें और अपनी नौकरी पाएं" },
+            ].map((item, i) => (
+              <div key={i} className="text-center">
+                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                  {item.step}
                 </div>
-                <p className="text-text-secondary mb-3">&ldquo;{t.text}&rdquo;</p>
-                <p className="font-semibold text-text-primary">{t.name}</p>
-                <p className="text-sm text-text-secondary">{t.area}</p>
+                <h3 className="text-xl font-bold text-text-primary mb-2">{item.title}</h3>
+                <p className="text-text-secondary">{item.desc}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="section-title">कैसे काम करता है?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { step: "1", title: "नौकरी खोजें", desc: "अपनी पसंद की नौकरी खोजें और फिल्टर करें" },
-            { step: "2", title: "अप्लाई करें", desc: "एक क्लिक में अप्लाई करें या कॉल करें" },
-            { step: "3", title: "नौकरी पाएं", desc: "इंटरव्यू दें और अपनी नौकरी पाएं" },
-          ].map((item, i) => (
-            <div key={i} className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                {item.step}
-              </div>
-              <h3 className="text-xl font-bold text-text-primary mb-2">{item.title}</h3>
-              <p className="text-text-secondary">{item.desc}</p>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -258,7 +241,7 @@ export default async function HomePage() {
                     "name": "हर दिन कितनी नई नौकरियां आती हैं?",
                     "acceptedAnswer": {
                       "@type": "Answer",
-                      "text": "हम रोजाना 20-50 नई नौकरियां पोस्ट करते हैं। ये नौकरियां अलग-अलग श्रेणियों और शहरों से होती हैं। सुबह 6 बजे, दोपहर 12 बजे और शाम 6 बजे नई नौकरियां अपडेट की जाती हैं।"
+                      "text": "हम रोजाना नई नौकरियां पोस्ट करते हैं। सुबह 6 बजे, दोपहर 12 बजे और शाम 6 बजे नई नौकरियां अपडेट की जाती हैं।"
                     }
                   }
                 ]
@@ -279,7 +262,7 @@ export default async function HomePage() {
               { q: "क्या नौकरी दिलाने के लिए कोई पैसे लगते हैं?",
                 a: "नहीं। नौकरी के लिए अप्लाई करना और सारी सेवाएं मुफ्त हैं। किसी को पैसे न दें।" },
               { q: "हर दिन कितनी नई नौकरियां आती हैं?",
-                a: "रोजाना 20-50 नई नौकरियां। सुबह 6, दोपहर 12 और शाम 6 बजे अपडेट।" },
+                a: "रोजाना नई नौकरियां जुड़ती हैं। सुबह 6, दोपहर 12 और शाम 6 बजे अपडेट।" },
             ].map((faq, i) => (
               <details key={i} className="card p-4 group">
                 <summary className="font-semibold text-text-primary cursor-pointer list-none flex justify-between items-center">

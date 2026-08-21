@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
+  const { allowed, resetAt } = checkRateLimit(ip);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const { name, email, message } = body;
@@ -18,7 +29,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Message too long" }, { status: 400 });
     }
 
-    console.log("Contact form submission:", { name, email, message: message.slice(0, 100) });
+    const { error } = await supabaseAdmin
+      .from("contact_submissions")
+      .insert({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        message: message.trim(),
+        ip_address: ip,
+      });
+
+    if (error) {
+      console.error("contact: db insert failed", error);
+      return NextResponse.json({ error: "Failed to save submission" }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

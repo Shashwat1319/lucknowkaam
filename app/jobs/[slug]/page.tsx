@@ -164,28 +164,6 @@ export default async function JobDetailPage({ params }: Props) {
                 </div>
               )}
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-5 mb-6">
-                <h3 className="font-bold text-text-primary mb-3">नौकरी के लिए जरूरी स्किल्स</h3>
-                <ul className="space-y-2 text-text-secondary">
-                  <li>• मेहनती और ईमानदार — कंपनी को ऐसे ही लोग चाहिए</li>
-                  <li>• समय पर काम करने की आदत — टाइम पर आना और काम पूरा करना</li>
-                  <li>• टीम के साथ मिलकर काम करना — सबको साथ लेकर चलना</li>
-                  <li>• सीखने की इच्छा — नई चीजें सीखने को तैयार रहना</li>
-                  <li>• जिम्मेदारी लेना — अपने काम की जिम्मेदारी खुद लेना</li>
-                </ul>
-              </div>
-
-              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-5 mb-6">
-                <h3 className="font-bold text-text-primary mb-3">कंपनी की तरफ से मिलने वाली सुविधाएं</h3>
-                <ul className="space-y-2 text-text-secondary">
-                  <li>• समय पर सैलरी — हर महीने की तय तारीख पर वेतन मिलेगा</li>
-                  <li>• सुरक्षित काम का माहौल — पुरुष और महिला दोनों के लिए सुरक्षित</li>
-                  <li>• छुट्टियां — हफ्ते में एक दिन की छुट्टी और सरकारी छुट्टियां</li>
-                  <li>• करियर ग्रोथ — अच्छा काम करने पर प्रमोशन और सैलरी बढ़ोतरी</li>
-                  <li>• प्रशिक्षण — काम सिखाने के लिए फ्री ट्रेनिंग दी जाएगी</li>
-                </ul>
-              </div>
-
               <div className="border-t border-border pt-6 mt-6">
                 <h3 className="text-xl font-bold text-text-primary mb-4">कैसे अप्लाई करें?</h3>
                 <div className="flex flex-col sm:flex-row gap-3">
