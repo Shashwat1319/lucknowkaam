@@ -50,13 +50,13 @@ export async function POST(request: Request) {
       },
     });
 
-    try {
-      await supabaseAdmin
-        .from("paid_listings")
-        .update({ razorpay_order_id: order.id })
-        .eq("id", listing_id);
-    } catch {
-      console.warn("create-order: could not store razorpay_order_id (column may not exist)");
+    const { error: updateError } = await supabaseAdmin
+      .from("paid_listings")
+      .update({ razorpay_order_id: order.id })
+      .eq("id", listing_id);
+
+    if (updateError) {
+      console.error("create-order: could not store razorpay_order_id", updateError);
     }
 
     const pubKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;

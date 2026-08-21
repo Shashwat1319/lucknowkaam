@@ -34,6 +34,7 @@ async function getJobs(params: Props["searchParams"]): Promise<{ jobs: Job[]; to
       .from("jobs")
       .select("*", { count: "exact" })
       .eq("is_active", true)
+      .order("is_featured", { ascending: false })
       .order("posted_at", { ascending: false });
 
     if (params.q) {

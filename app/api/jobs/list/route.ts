@@ -13,13 +13,15 @@ export async function GET(request: Request) {
   const location = searchParams.get("location");
   const type = searchParams.get("type");
   const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const rawLimit = parseInt(searchParams.get("limit") || "20");
+  const limit = Math.min(Math.max(rawLimit, 1), 50);
   const offset = (page - 1) * limit;
 
   let query = supabase
     .from("jobs")
     .select("*", { count: "exact" })
     .eq("is_active", true)
+    .order("is_featured", { ascending: false })
     .order("posted_at", { ascending: false });
 
   if (category) query = query.eq("category", category);

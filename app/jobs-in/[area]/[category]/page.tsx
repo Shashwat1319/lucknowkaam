@@ -50,6 +50,7 @@ async function getJobs(areaName: string, category: string, page: number): Promis
       .eq("is_active", true)
       .eq("location_area", areaName)
       .eq("category", category)
+      .order("is_featured", { ascending: false })
       .order("posted_at", { ascending: false })
       .range(offset, offset + JOBS_PER_PAGE - 1);
     return { jobs: (data as Job[]) || [], total: count || 0 };

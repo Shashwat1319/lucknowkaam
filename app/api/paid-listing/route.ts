@@ -24,9 +24,14 @@ export async function POST(request: Request) {
 
     const {
       company_name,
+      your_name,
       contact_phone,
+      whatsapp_number,
       job_title,
       job_description,
+      salary,
+      location_area,
+      category,
     } = body;
 
     if (!company_name || !contact_phone || !job_title) {
@@ -41,13 +46,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid phone number — 10 digits starting with 6-9 required" }, { status: 400 });
     }
 
+    let cleanedWhatsapp = "";
+    if (whatsapp_number) {
+      cleanedWhatsapp = whatsapp_number.replace(/[\s\-\(\)]/g, "").replace(/^(\+?91|0)/, "");
+      if (!/^[6-9]\d{9}$/.test(cleanedWhatsapp)) {
+        return NextResponse.json({ error: "Invalid WhatsApp number — 10 digits starting with 6-9 required" }, { status: 400 });
+      }
+    }
+
     const { data: listing, error } = await supabaseAdmin
       .from("paid_listings")
       .insert({
         company_name,
+        your_name: your_name || "",
         contact_phone: cleanedPhone,
+        whatsapp_number: cleanedWhatsapp || cleanedPhone,
         job_title,
         job_description: job_description || "",
+        salary: salary ? String(salary) : "",
+        location_area: location_area || "India",
+        category: category || "computer",
         payment_status: "pending",
         amount: 299,
       })

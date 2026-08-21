@@ -44,6 +44,7 @@ async function getJobs(areaName: string, page: number): Promise<{ jobs: Job[]; t
       .select("*", { count: "exact" })
       .eq("is_active", true)
       .eq("location_area", areaName)
+      .order("is_featured", { ascending: false })
       .order("posted_at", { ascending: false })
       .range(offset, offset + JOBS_PER_PAGE - 1);
     return { jobs: (data as Job[]) || [], total: count || 0 };

@@ -14,6 +14,7 @@ async function getRecentJobs(): Promise<Job[]> {
       .from("jobs")
       .select("*")
       .eq("is_active", true)
+      .order("is_featured", { ascending: false })
       .order("posted_at", { ascending: false })
       .limit(8);
     return (data as Job[]) || [];

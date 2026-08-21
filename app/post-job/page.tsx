@@ -113,7 +113,7 @@ export default function PostJobPage() {
         <div className="text-6xl mb-4">✅</div>
         <h1 className="text-3xl font-bold text-secondary mb-4">पेमेंट सफल! आपकी vacancy पोस्ट हो गई!</h1>
         <p className="text-lg text-text-secondary mb-6">
-          आपकी नौकरी अब 30 दिनों तक LucknowKaam पर दिखाई देगी। आपको कंफर्मेशन WhatsApp पर मिलेगा।
+          आपकी नौकरी अब 30 दिनों तक LucknowKaam पर दिखाई देगी।
         </p>
         <a href="/jobs" className="btn-primary text-lg px-8 py-4">
           सभी नौकरियां देखें

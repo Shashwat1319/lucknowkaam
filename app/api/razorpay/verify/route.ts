@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
+import Razorpay from "razorpay";
 import { supabaseAdmin } from "@/lib/supabase";
+
+const JOB_LISTING_PRICE_PAISE = 29900;
 
 let validatePaymentVerification: ((params: { order_id: string; payment_id: string }, signature: string, secret: string) => boolean) | null = null;
 
@@ -11,10 +14,19 @@ try {
   console.error("verify: razorpay-utils import failed");
 }
 
+function getRazorpay() {
+  const key_id = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    throw new Error("Razorpay key not configured on server");
+  }
+  return new Razorpay({ key_id, key_secret });
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, listing_id, category } = body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, listing_id } = body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !listing_id) {
       return NextResponse.json({ error: "Missing verification fields" }, { status: 400 });
@@ -50,9 +62,41 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Listing not found" }, { status: 404 });
     }
 
+    if (listing.payment_status === "paid") {
+      return NextResponse.json({ error: "Already processed" }, { status: 400 });
+    }
+
+    if (listing.razorpay_order_id && listing.razorpay_order_id !== razorpay_order_id) {
+      return NextResponse.json({ error: "Order does not match listing" }, { status: 400 });
+    }
+
+    let orderAmount = JOB_LISTING_PRICE_PAISE;
+    let orderCurrency = "INR";
+    let orderListingId = listing_id;
+    try {
+      const order = await getRazorpay().orders.fetch(razorpay_order_id);
+      orderAmount = Number(order.amount);
+      orderCurrency = order.currency;
+      orderListingId = String(order.notes?.listing_id || listing_id);
+    } catch (e) {
+      console.error("Verify: could not fetch order", e);
+    }
+
+    if (orderAmount !== JOB_LISTING_PRICE_PAISE || orderCurrency !== "INR") {
+      return NextResponse.json({ error: "Invalid order amount" }, { status: 400 });
+    }
+
+    if (orderListingId !== listing_id) {
+      return NextResponse.json({ error: "Order does not belong to this listing" }, { status: 400 });
+    }
+
     const { error: updateError } = await supabaseAdmin
       .from("paid_listings")
-      .update({ payment_status: "paid" })
+      .update({
+        payment_status: "paid",
+        razorpay_payment_id,
+        razorpay_order_id,
+      })
       .eq("id", listing_id);
 
     if (updateError) {
@@ -60,30 +104,42 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    const city = body.city || listing.city || "India";
-    const jobCategory = category || "computer";
+    const city = listing.location_area || "India";
+    const jobCategory = listing.category || "computer";
 
-    const { error: insertError } = await supabaseAdmin
+    const { data: existing } = await supabaseAdmin
       .from("jobs")
-      .insert({
-        title_hindi: listing.job_title,
-        title_english: listing.job_title,
-        slug: `${listing.job_title?.toLowerCase().replace(/\s+/g, "-") || "job"}-${city.toLowerCase().replace(/\s+/g, "-") || "india"}-${Date.now()}`,
-        description_hindi: listing.job_description || "",
-        company_name: listing.company_name || "Unknown",
-        location_area: city,
-        category: jobCategory,
-        contact_number: listing.contact_phone || "",
-        source: "paid-listing",
-        is_active: true,
-        posted_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        views: 0,
-      });
+      .select("id")
+      .eq("company_name", listing.company_name || "Unknown")
+      .eq("title_hindi", listing.job_title)
+      .eq("location_area", city)
+      .maybeSingle();
 
-    if (insertError) {
-      console.error("Verify: job insert failed", insertError);
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
+    if (!existing) {
+      const { error: insertError } = await supabaseAdmin
+        .from("jobs")
+        .insert({
+          title_hindi: listing.job_title,
+          title_english: listing.job_title,
+          slug: `${listing.job_title?.toLowerCase().replace(/\s+/g, "-") || "job"}-${city.toLowerCase().replace(/\s+/g, "-") || "india"}-${Date.now()}`,
+          description_hindi: listing.job_description || "",
+          company_name: listing.company_name || "Unknown",
+          location_area: city,
+          category: jobCategory,
+          salary_text_hindi: listing.salary || "",
+          contact_number: listing.whatsapp_number || listing.contact_phone || "",
+          source: "paid-listing",
+          is_active: true,
+          is_featured: true,
+          posted_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          views: 0,
+        });
+
+      if (insertError) {
+        console.error("Verify: job insert failed", insertError);
+        return NextResponse.json({ error: insertError.message }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ success: true });

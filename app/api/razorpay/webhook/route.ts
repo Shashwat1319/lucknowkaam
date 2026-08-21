@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     if (event.event === "payment.captured") {
       const payment = event.payload.payment.entity;
       const orderId = payment.order_id;
+      const paymentId = payment.id;
 
       try {
         const { data: listing } = await supabaseAdmin
@@ -32,14 +33,18 @@ export async function POST(request: Request) {
         if (listing && listing.payment_status !== "paid") {
           await supabaseAdmin
             .from("paid_listings")
-            .update({ payment_status: "paid" })
+            .update({ payment_status: "paid", razorpay_payment_id: paymentId })
             .eq("id", listing.id);
+
+          const city = listing.location_area || "India";
+          const jobCategory = listing.category || "computer";
 
           const { data: existing } = await supabaseAdmin
             .from("jobs")
             .select("id")
-            .eq("company_name", listing.company_name)
+            .eq("company_name", listing.company_name || "Unknown")
             .eq("title_hindi", listing.job_title)
+            .eq("location_area", city)
             .maybeSingle();
 
           if (!existing) {
@@ -48,14 +53,16 @@ export async function POST(request: Request) {
               .insert({
                 title_hindi: listing.job_title,
                 title_english: listing.job_title,
-                slug: `${listing.job_title?.toLowerCase().replace(/\s+/g, "-") || "job"}-${listing.location_area?.toLowerCase().replace(/\s+/g, "-") || "india"}-${Date.now()}`,
+                slug: `${listing.job_title?.toLowerCase().replace(/\s+/g, "-") || "job"}-${city.toLowerCase().replace(/\s+/g, "-") || "india"}-${Date.now()}`,
                 description_hindi: listing.job_description || "",
                 company_name: listing.company_name || "Unknown",
-                location_area: listing.location_area || "India",
-                category: listing.category || "computer",
-                contact_number: listing.contact_phone || "",
+                location_area: city,
+                category: jobCategory,
+                salary_text_hindi: listing.salary || "",
+                contact_number: listing.whatsapp_number || listing.contact_phone || "",
                 source: "paid-listing",
                 is_active: true,
+                is_featured: true,
                 posted_at: new Date().toISOString(),
                 expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
                 views: 0,
@@ -63,7 +70,7 @@ export async function POST(request: Request) {
           }
         }
       } catch (e) {
-        console.warn("webhook: paid_listings lookup failed (columns may not exist)", e);
+        console.warn("webhook: paid_listings lookup failed", e);
       }
     }
 
