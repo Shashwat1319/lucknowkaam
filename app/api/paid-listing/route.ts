@@ -46,14 +46,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const cleanedPhone = contact_phone.replace(/[\s\-\(\)]/g, "").replace(/^(\+?91|0)/, "");
+    const cleanedPhone = contact_phone.replace(/[\s\-\(\)]/g, "").replace(/^\+91|^0/, "");
     if (!/^[6-9]\d{9}$/.test(cleanedPhone)) {
       return NextResponse.json({ error: "Invalid phone number — 10 digits starting with 6-9 required" }, { status: 400 });
     }
 
     let cleanedWhatsapp = "";
     if (whatsapp_number) {
-      cleanedWhatsapp = whatsapp_number.replace(/[\s\-\(\)]/g, "").replace(/^(\+?91|0)/, "");
+      cleanedWhatsapp = whatsapp_number.replace(/[\s\-\(\)]/g, "").replace(/^\+91|^0/, "");
       if (!/^[6-9]\d{9}$/.test(cleanedWhatsapp)) {
         return NextResponse.json({ error: "Invalid WhatsApp number — 10 digits starting with 6-9 required" }, { status: 400 });
       }
