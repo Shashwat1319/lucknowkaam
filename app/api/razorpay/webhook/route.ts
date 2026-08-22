@@ -64,7 +64,7 @@ export async function POST(request: Request) {
                 is_active: true,
                 is_featured: true,
                 posted_at: new Date().toISOString(),
-                expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
                 views: 0,
               });
           }

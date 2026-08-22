@@ -113,7 +113,7 @@ export default function PostJobPage() {
         <div className="text-6xl mb-4">✅</div>
         <h1 className="text-3xl font-bold text-secondary mb-4">पेमेंट सफल! आपकी vacancy पोस्ट हो गई!</h1>
         <p className="text-lg text-text-secondary mb-6">
-          आपकी नौकरी अब 30 दिनों तक LucknowKaam पर दिखाई देगी।
+          आपकी नौकरी अब 90 दिनों तक LucknowKaam पर दिखाई देगी।
         </p>
         <a href="/jobs" className="btn-primary text-lg px-8 py-4">
           सभी नौकरियां देखें
@@ -130,7 +130,7 @@ export default function PostJobPage() {
           अपनी vacancy पोस्ट करें और हजारों job seekers तक पहुंचे
         </p>
         <div className="inline-block bg-orange-50 text-primary font-bold text-xl px-6 py-3 rounded-lg mt-4">
-          सिर्फ ₹299 में 30 दिन तक आपकी vacancy
+          सिर्फ ₹299 में 90 दिन तक आपकी vacancy
         </div>
       </div>
 
@@ -253,7 +253,7 @@ export default function PostJobPage() {
 
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mt-4">
           <p className="text-sm text-text-secondary">
-            <strong className="text-primary">₹299</strong> में 30 दिन तक आपकी vacancy
+            <strong className="text-primary">₹299</strong> में 90 दिन तक आपकी vacancy
             हजारों job seekers को दिखेगी। पेमेंट Razorpay के माध्यम से सुरक्षित रूप से होगा।
             UPI, क्रेडिट कार्ड, डेबिट कार्ड, नेट बैंकिंग सभी स्वीकार्य हैं।
           </p>

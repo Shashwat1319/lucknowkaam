@@ -341,7 +341,7 @@ async function seed() {
       is_paid: false,
       source: "manual",
       posted_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
       views: Math.floor(Math.random() * 500),
     });
 
